@@ -36,7 +36,7 @@ export function Hero() {
   const Arrow = language === "he" ? ArrowLeft : ArrowRight;
 
   return (
-    <section className="aurora-bg relative isolate overflow-hidden">
+    <section className="relative isolate overflow-hidden bg-transparent">
       <BackgroundBeams />
 
       <div className="relative z-10 mx-auto flex min-h-[88svh] max-w-6xl flex-col items-center justify-center px-6 py-24 text-center">
