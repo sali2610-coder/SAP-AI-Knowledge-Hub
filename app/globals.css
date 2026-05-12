@@ -27,6 +27,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -46,6 +48,10 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-sap-positive: var(--sap-positive);
+  --color-sap-negative: var(--sap-negative);
+  --color-sap-critical: var(--sap-critical);
+  --font-sap: var(--font-sap);
 }
 
 /* Horizon palette - tuned to SAP Fiori Horizon (Belize Hole primary, mango
@@ -78,6 +84,18 @@
   --chart-4: oklch(0.58 0.22 27);
   --chart-5: oklch(0.45 0.12 290);
   --radius: 0.875rem;
+
+  /* SAP 72 type scale — install @sap-theming/theming-base-content for .woff2 files */
+  --font-sap: '72Text', '72', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* SAP Horizon semantic status tokens (light mode) */
+  --sap-positive: oklch(0.47 0.16 145);    /* Positive Green  #107e3e */
+  --sap-negative: oklch(0.40 0.20 27);     /* Negative Red    #bb0000 */
+  --sap-critical: oklch(0.62 0.16 47);     /* Critical Orange #e9730c */
+
+  /* Fixed dark surface for code/diagram blocks - intentionally not theme-aware */
+  --code-bg: #0b1622;
+
   --shadow-color: 220 40% 12%;
   --shadow-strength: 1%;
   --sidebar: oklch(0.985 0.003 250);
@@ -116,6 +134,11 @@
   --chart-3: oklch(0.82 0.15 60);
   --chart-4: oklch(0.72 0.22 27);
   --chart-5: oklch(0.65 0.18 290);
+  /* SAP Horizon semantic status tokens (dark mode - elevated lightness) */
+  --sap-positive: oklch(0.62 0.18 145);
+  --sap-negative: oklch(0.60 0.22 27);
+  --sap-critical: oklch(0.74 0.16 47);
+
   --shadow-color: 220 60% 2%;
   --shadow-strength: 25%;
   --sidebar: oklch(0.17 0.025 255);
@@ -134,12 +157,27 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01", "ss03";
   }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {
-    @apply font-sans;
+    font-family: var(--font-sap), var(--font-inter), var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.005em;
+  }
+  html[dir="rtl"] {
+    font-family: var(--font-sap), var(--font-sans), var(--font-inter), system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+  code, pre, kbd, samp {
+    font-family: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+    font-variant-ligatures: contextual;
+    font-feature-settings: "calt", "tnum", "ss02";
+  }
+  /* Tabular numerals for KPIs + tcodes - keeps columns aligned. */
+  .tnum, .font-mono {
+    font-variant-numeric: tabular-nums;
   }
   ::selection {
     background: color-mix(in oklch, var(--primary) 35%, transparent);
@@ -259,6 +297,13 @@
   border-radius: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+/* SAP Horizon semantic status surfaces - use on badges, alerts, object status */
+.sap-status-positive { color: var(--sap-positive); background: color-mix(in oklch, var(--sap-positive) 10%, transparent); border-color: color-mix(in oklch, var(--sap-positive) 30%, transparent); }
+.sap-status-negative  { color: var(--sap-negative);  background: color-mix(in oklch, var(--sap-negative)  10%, transparent); border-color: color-mix(in oklch, var(--sap-negative)  30%, transparent); }
+.sap-status-critical  { color: var(--sap-critical);  background: color-mix(in oklch, var(--sap-critical)  10%, transparent); border-color: color-mix(in oklch, var(--sap-critical)  30%, transparent); }
+.sap-status-info      { color: var(--primary);        background: color-mix(in oklch, var(--primary)        10%, transparent); border-color: color-mix(in oklch, var(--primary)        30%, transparent); }
+.sap-status-neutral   { color: var(--muted-foreground); background: color-mix(in oklch, var(--muted-foreground) 8%, transparent); border-color: color-mix(in oklch, var(--muted-foreground) 20%, transparent); }
 
 .beam {
   position: absolute;

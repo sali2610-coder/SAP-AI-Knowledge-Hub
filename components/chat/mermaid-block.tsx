@@ -13,10 +13,10 @@ async function loadMermaid() {
         theme: "dark",
         themeVariables: {
           background: "transparent",
-          primaryColor: "#1e1b4b",
+          primaryColor: "#003071",
           primaryTextColor: "#e2e8f0",
-          lineColor: "#6366f1",
-          edgeLabelBackground: "#0b1020",
+          lineColor: "#0070f2",
+          edgeLabelBackground: "#0b1622",
         },
         fontFamily: "var(--font-sans), Inter, system-ui",
         securityLevel: "strict",
@@ -63,7 +63,7 @@ export function MermaidBlock({ source }: { source: string }) {
   }
 
   return (
-    <div className="my-3 overflow-x-auto rounded-xl border border-foreground/10 bg-[#0b1020] p-4">
+    <div className="my-3 overflow-x-auto rounded-xl border border-foreground/10 bg-[var(--code-bg)] p-4">
       <div ref={ref} dir="ltr" className="[&_svg]:mx-auto [&_svg]:max-w-full" />
     </div>
   );

@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, BookOpen, MessageSquare, Sparkles } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Bookmark,
+  BookmarkCheck,
+  Check,
+  Link2,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExplainPanel } from "./explain-panel";
 import { useHubStore } from "@/lib/store";
@@ -22,6 +33,10 @@ const COPY = {
     backToLibrary: "חזרה לספרייה",
     intro: "הקטעים הבאים הוצאו מתוך הספר. לחץ על שורה כדי לקבל הסבר בעברית מהסוכן המתאים, עם קישור חזרה למקור.",
     moduleAgent: "סוכן מומלץ:",
+    bookmark: "סמן פסקה",
+    bookmarked: "סומן",
+    share: "העתק קישור",
+    shared: "הקישור הועתק",
   },
   en: {
     chapters: "Chapters",
@@ -31,14 +46,21 @@ const COPY = {
     backToLibrary: "Back to library",
     intro: "The following passages were extracted from the book. Click any line for an English explanation from the matching agent, with a deep link back to the source.",
     moduleAgent: "Recommended agent:",
+    bookmark: "Bookmark paragraph",
+    bookmarked: "Bookmarked",
+    share: "Copy link",
+    shared: "Link copied",
   },
 } as const;
 
 export function BookReader({ document }: { document: BookDocument }) {
   const language = useHubStore((s) => s.language);
   const setAgent = useHubStore((s) => s.setActiveAgent);
+  const bookmarks = useHubStore((s) => s.bookmarks);
+  const toggleBookmark = useHubStore((s) => s.toggleBookmark);
   const t = COPY[language];
   const HomeArrow = language === "he" ? ArrowRight : ArrowLeft;
+  const searchParams = useSearchParams();
 
   const recommendedAgentId = (document.book.agents[0] as AgentId) ?? "architect";
   const recommended = getAgent(recommendedAgentId);
@@ -52,8 +74,38 @@ export function BookReader({ document }: { document: BookDocument }) {
     text: string;
     chapterTitle: string;
   } | null>(null);
+  const [sharedId, setSharedId] = useState<string | null>(null);
 
+  const paragraphRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const chapterRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  // Deep-link via ?p=<paragraphId> opens the explain panel + scrolls into view.
+  // Defer the setState to a microtask so the linter is happy (no cascading
+  // render inside the effect body itself) and we don't fight Strict Mode.
+  useEffect(() => {
+    const p = searchParams.get("p");
+    if (!p) return;
+    for (const ch of document.chapters) {
+      const match = ch.paragraphs.find((x) => x.id === p);
+      if (match) {
+        const open = () => {
+          setOpenParagraph({
+            paragraphId: match.id,
+            text: match.text,
+            chapterTitle: ch.title,
+          });
+          setTimeout(() => {
+            paragraphRefs.current[match.id]?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }, 80);
+        };
+        queueMicrotask(open);
+        return;
+      }
+    }
+  }, [searchParams, document.chapters]);
 
   // IntersectionObserver to sync sidebar selection with scroll position.
   useEffect(() => {
@@ -202,30 +254,89 @@ export function BookReader({ document }: { document: BookDocument }) {
                     : "No indexed paragraphs for this chapter."}
                 </p>
               )}
-              {ch.paragraphs.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className="row-interactive text-start"
-                  data-active={openParagraph?.paragraphId === p.id ? "true" : "false"}
-                  onClick={() =>
-                    setOpenParagraph({
-                      paragraphId: p.id,
-                      text: p.text,
-                      chapterTitle: ch.title,
-                    })
-                  }
-                >
-                  {p.text}
-                </button>
-              ))}
+              {ch.paragraphs.map((p) => {
+                const isBookmarked = !!bookmarks[p.id];
+                return (
+                  <div key={p.id} className="group/row relative flex gap-2">
+                    <button
+                      type="button"
+                      ref={(el) => {
+                        paragraphRefs.current[p.id] = el;
+                      }}
+                      className="row-interactive flex-1 text-start"
+                      data-active={openParagraph?.paragraphId === p.id ? "true" : "false"}
+                      onClick={() =>
+                        setOpenParagraph({
+                          paragraphId: p.id,
+                          text: p.text,
+                          chapterTitle: ch.title,
+                        })
+                      }
+                    >
+                      {p.text}
+                    </button>
+                    <div className="flex shrink-0 items-start gap-0.5 opacity-0 transition group-hover/row:opacity-100">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={isBookmarked ? t.bookmarked : t.bookmark}
+                        title={isBookmarked ? t.bookmarked : t.bookmark}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBookmark({
+                            paragraphId: p.id,
+                            bookSlug: document.book.slug,
+                            bookTitle: document.book.title,
+                            excerpt: p.text.slice(0, 220),
+                            chapterTitle: ch.title,
+                            addedAt: Date.now(),
+                          });
+                        }}
+                        className={cn(
+                          "h-7 w-7 p-0",
+                          isBookmarked && "text-primary",
+                        )}
+                      >
+                        {isBookmarked ? (
+                          <BookmarkCheck className="h-3.5 w-3.5" />
+                        ) : (
+                          <Bookmark className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={t.share}
+                        title={sharedId === p.id ? t.shared : t.share}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `${window.location.origin}/library/${document.book.slug}?p=${encodeURIComponent(p.id)}`;
+                          navigator.clipboard.writeText(url).then(() => {
+                            setSharedId(p.id);
+                            setTimeout(() => setSharedId(null), 1500);
+                          });
+                        }}
+                        className="h-7 w-7 p-0"
+                      >
+                        {sharedId === p.id ? (
+                          <Check className="h-3.5 w-3.5 text-success" />
+                        ) : (
+                          <Link2 className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {idx === document.chapters.length - 1 && (
               <p className="mt-6 text-xs text-muted-foreground">
                 {language === "he"
-                  ? "אינדקס מקוצר: כ-80 עמודים ראשונים מתוך הספר. לפרקים נוספים, הרץ npm run kb:index לאחר עדכון הספר."
-                  : "Trimmed index: roughly the first 80 pages of the book. Re-run npm run kb:index to refresh after updating the source PDF."}
+                  ? `אינדקס עמוק: ${document.totalParagraphs} פסקאות מתוך ${document.book.pageCount} עמודים. לרענון לאחר עדכון ה-PDF, הרץ npm run kb:index.`
+                  : `Deep index: ${document.totalParagraphs} paragraphs from ${document.book.pageCount} pages. Run npm run kb:index to refresh after updating the source PDF.`}
               </p>
             )}
           </section>

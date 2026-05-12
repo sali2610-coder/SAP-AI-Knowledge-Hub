@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sibling project with its own lint config + git history.
+    "sap-odata-explorer/**",
   ]),
 ]);
 

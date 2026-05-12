@@ -1,63 +1,78 @@
 {
-  "generatedAt": "2026-05-11T18:35:23.589Z",
+  "generatedAt": "2026-05-12T14:16:14.026Z",
   "books": [
     {
       "slug": "9f320f75348944ad9719a173d724b7b8",
-      "title": "9f320f75348944ad9719a173d724b7b8",
+      "title": "EBOOK PREREQUISITES FOR SAP S/4HANA END-TO-END IMPLEMENTATION TRAINING",
       "file": "9f320f75348944ad9719a173d724b7b8.pdf",
-      "module": "General",
+      "module": "Foundation",
       "agents": [
         "architect"
       ],
       "pageCount": 193,
-      "chapters": [],
+      "chapters": [
+        {
+          "n": 6,
+          "title": "Week 10"
+        }
+      ],
       "terms": [
-        "business",
-        "zarantech",
         "email",
+        "zarantech",
         "call",
         "whatsapp",
         "info",
-        "sales",
-        "finance",
-        "goods",
-        "process",
-        "order",
-        "customer",
-        "processes",
-        "vendor",
-        "functions",
-        "payment",
-        "enterprise",
-        "procurement",
+        "business",
+        "data",
         "what",
-        "delivery",
-        "documents",
-        "purchase",
-        "integrated",
-        "invoice",
-        "enterprises",
+        "process",
         "system",
-        "because",
-        "terms",
-        "need",
-        "core",
-        "inventory",
-        "operations",
-        "warehouse",
-        "company",
-        "every",
-        "end-to-end",
+        "processes",
+        "sales",
+        "fiori",
+        "user",
+        "functional",
+        "which",
+        "customer",
+        "transaction",
+        "configuration",
+        "finance",
+        "document",
+        "master",
         "learners",
-        "service",
-        "language",
-        "which"
+        "consultants",
+        "goods",
+        "company",
+        "consultant",
+        "order",
+        "understand",
+        "vendor",
+        "module",
+        "transactions",
+        "documents",
+        "they",
+        "terms",
+        "users",
+        "bridge",
+        "work",
+        "payment",
+        "across"
       ],
-      "tcodes": [],
+      "tcodes": [
+        "FB60",
+        "MM01",
+        "VA01",
+        "ME21N"
+      ],
       "tables": [
         "EBOOK",
         "EMAIL",
-        "CALL"
+        "CALL",
+        "HANA",
+        "TEST",
+        "ABAP",
+        "SPRO",
+        "REACH"
       ]
     },
     {
@@ -90,52 +105,133 @@
         {
           "n": 15,
           "title": "About the Book If you plan for a year, plant a seed"
+        },
+        {
+          "n": 17,
+          "title": "What This Book Can and Can"
+        },
+        {
+          "n": 19,
+          "title": "Structure of Contents"
+        },
+        {
+          "n": 21,
+          "title": "How to Read This Book Figure 1 Sample Figure Recommendations Normally, at the end"
+        },
+        {
+          "n": 23,
+          "title": "What Is the Status of Your SAP S/4HANA System"
+        },
+        {
+          "n": 25,
+          "title": "What Is the Status of Your SAP S/4HANA System"
+        },
+        {
+          "n": 27,
+          "title": "Chapter 1 SAP Projects in Plant Maintenance This chapter provides a roadmap for y"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 28 The functional stages of your plant maintena"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 30 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 32"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 34 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 36"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 38 1"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 40 There are different opportunities to become"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 42 To avoid starting from scratch, consider the"
+        },
+        {
+          "n": 1,
+          "title": "SAP Projects in Plant Maintenance 44"
         }
       ],
       "terms": [
         "plant",
         "maintenance",
-        "fiori",
-        "step",
-        "e-book",
-        "business",
+        "project",
+        "system",
         "management",
-        "configuring",
-        "summary",
-        "launchpad",
-        "configure",
-        "edition",
-        "book",
+        "data",
+        "business",
+        "which",
+        "company",
         "phase",
-        "apps",
-        "user",
-        "sap-press",
-        "hardcover",
-        "material",
-        "processing",
+        "organizational",
+        "processes",
+        "asset",
+        "planning",
+        "what",
+        "customizing",
+        "following",
+        "projects",
+        "work",
+        "functions",
+        "order",
+        "should",
+        "book",
         "copy",
-        "contents",
-        "create",
+        "personal",
+        "code",
+        "controlling",
+        "these",
+        "other",
+        "transaction",
+        "there",
         "rheinwerk",
         "publishing",
-        "liebst",
-        "ckel",
-        "planning",
-        "isbn",
-        "functions",
-        "asset",
-        "order",
-        "customizing",
-        "karl",
-        "service",
-        "notes",
-        "personal",
-        "project",
-        "general",
-        "factors"
+        "technical",
+        "process",
+        "master",
+        "users",
+        "boston",
+        "implementation",
+        "team"
       ],
       "tcodes": [
-        "TS192"
+        "TS192",
+        "FPS01",
+        "SFW5",
+        "QG1",
+        "QG2",
+        "QG4",
+        "QG3",
+        "QG5",
+        "IW31",
+        "IW41",
+        "IW48",
+        "IW47",
+        "SE11",
+        "IW28",
+        "IW38",
+        "OX06",
+        "OX19",
+        "NA00",
+        "US00",
+        "OX18",
+        "DL00",
+        "MI00"
       ],
       "tables": [
         "PRESS",
@@ -144,7 +240,17 @@
         "LCSH",
         "HANA",
         "KUAN",
-        "CHUNG"
+        "CHUNG",
+        "ASAP",
+        "BPML",
+        "LSMW",
+        "IBIP",
+        "AFRU",
+        "BANF",
+        "BPMN",
+        "PFCG",
+        "ABAP",
+        "SEAL"
       ]
     },
     {
@@ -176,7 +282,7 @@
         },
         {
           "n": 6,
-          "title": "Table of Contents Notes on Usage Table of Contents Preface 1 Introduction to"
+          "title": "Table of Contents Notes on Usage Table of Contents Preface 1 Introduction to Exte"
         },
         {
           "n": 10,
@@ -184,7 +290,7 @@
         },
         {
           "n": 12,
-          "title": "Manufacturing companies Organizations engaged in production and assembly process"
+          "title": "Manufacturing companies Organizations engaged in production and assembly processe"
         },
         {
           "n": 13,
@@ -192,64 +298,131 @@
         },
         {
           "n": 14,
-          "title": "Chapter 3 The objective of this chapter is to serve as a comprehensive guide o"
+          "title": "Chapter 3 The objective of this chapter is to serve as a comprehensive guide on t"
         },
         {
           "n": 15,
-          "title": "Chapter 7 This chapter provides an overview of yard logistics, including its f"
+          "title": "Chapter 7 This chapter provides an overview of yard logistics, including its func"
         },
         {
           "n": 16,
           "title": "References For more information on SAP EWM, visit the following websites"
+        },
+        {
+          "n": 20,
+          "title": "SAP EWM empowers you to digitally map your entire warehouse complex down to the s"
+        },
+        {
+          "n": 21,
+          "title": "SAP EWM o ff ers intelligent inbound processing management capabilities that opti"
+        },
+        {
+          "n": 22,
+          "title": "These features optimize the routing and picking of goods, ensuring timely plannin"
+        },
+        {
+          "n": 24,
+          "title": "SAP EWM is a comprehensive solution for managing your warehousing and logistics o"
+        },
+        {
+          "n": 26,
+          "title": "The release of SAP EWM 5"
+        },
+        {
+          "n": 28,
+          "title": "Overall, the inclusion of embedded EWM o ff ers businesses a powerful warehouse m"
         }
       ],
       "terms": [
-        "management",
-        "integration",
         "warehouse",
-        "processes",
-        "process",
-        "advanced",
-        "book",
-        "business",
         "production",
-        "inbound",
-        "overview",
-        "manufacturing",
-        "outbound",
-        "their",
-        "options",
+        "management",
+        "process",
+        "integration",
         "system",
-        "embedded",
-        "logistics",
-        "yard",
-        "track",
-        "e-book",
-        "planning",
-        "transportation",
-        "trace",
-        "solution",
-        "extended",
-        "deployment",
-        "summary",
+        "type",
+        "data",
         "supply",
-        "dock",
-        "provide",
+        "goods",
+        "delivery",
+        "staging",
+        "order",
+        "shown",
+        "business",
+        "click",
+        "processes",
+        "area",
+        "material",
+        "manufacturing",
+        "storage",
+        "create",
+        "advanced",
+        "outbound",
+        "master",
+        "extended",
+        "planning",
+        "logistics",
+        "inventory",
         "personal",
+        "transaction",
         "copy",
-        "systems",
-        "orders",
-        "inspection",
-        "appointment",
-        "plant",
-        "maintenance",
-        "requirements"
+        "deployment",
+        "define",
+        "operations",
+        "inbound",
+        "their",
+        "rheinwerk",
+        "publishing",
+        "boston"
       ],
-      "tcodes": [],
+      "tcodes": [
+        "FPS02",
+        "CO15",
+        "CO02",
+        "MF60",
+        "MM01",
+        "PK05",
+        "LPK1",
+        "CR01",
+        "CA01",
+        "CS01",
+        "CO01",
+        "VL060",
+        "COR15",
+        "VL03N",
+        "CO03",
+        "CO11N",
+        "CO12",
+        "COR6N",
+        "MF42N",
+        "MAT1",
+        "VL33N",
+        "EWMS4",
+        "SF01",
+        "CR0"
+      ],
       "tables": [
         "ISBN",
         "EPUB",
-        "PRESS"
+        "PRESS",
+        "RFID",
+        "HANA",
+        "POSC",
+        "LOSC",
+        "IDOC",
+        "MIGO",
+        "SCWM",
+        "RFUI",
+        "NWBC",
+        "CORR",
+        "CORK",
+        "MFBF",
+        "INBI",
+        "PRDI",
+        "STAGE",
+        "PCCO",
+        "PCNS",
+        "PCSO"
       ]
     },
     {
@@ -274,52 +447,142 @@
         {
           "n": 11,
           "title": "Contents 6"
+        },
+        {
+          "n": 13,
+          "title": "Contents 10 Administering PP/DS with SAP S/4HANA 569 10"
+        },
+        {
+          "n": 15,
+          "title": "Preface Welcome to PP/DS with SAP S/4HANA , a comprehensive review of the SAP S/4"
+        },
+        {
+          "n": 17,
+          "title": "How This Book Is Organized explain monitoring and evaluation of planning runs, as"
+        },
+        {
+          "n": 19,
+          "title": "Chapter 1 Introduction to PP/DS with SAP S/4HANA To start our journey through pro"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 20 In 2016, SAP released the 1610 version"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 22 Note When a new SAP S/4HANA release is"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 24 material flows and processing of the in"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 26"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 28 Note Although most of the planning and"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 30 routings/master recipes, production ver"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 32 SAP Advanced Planning and Optimization"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 34 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 36 and Optimization processes, the system"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 38 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 40 SAP Fiori apps delivered with the SAP S"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to PP/DS with SAP S/4HANA 42 Figure 1"
+        },
+        {
+          "n": 2,
+          "title": "Master Data 44 2"
         }
       ],
       "terms": [
         "planning",
-        "production",
-        "scheduling",
-        "e-book",
         "data",
-        "detailed",
-        "settings",
-        "edition",
-        "integration",
-        "optimizer",
-        "monitor",
-        "sap-press",
-        "advanced",
-        "summary",
         "master",
-        "heuristics",
-        "hardcover",
-        "contents",
-        "profile",
-        "orders",
-        "alert",
-        "rheinwerk",
-        "publishing",
-        "requirements",
-        "board",
-        "copy",
-        "transfer",
+        "advanced",
+        "system",
+        "embedded",
+        "optimization",
+        "production",
+        "material",
+        "scheduling",
+        "supply",
+        "integration",
+        "resource",
         "transaction",
-        "heuristic",
-        "profiles",
-        "please",
-        "materials",
-        "configuration",
-        "mahesh",
+        "orders",
+        "model",
+        "chain",
+        "resources",
+        "available",
+        "work",
+        "capacity",
+        "systems",
+        "detailed",
+        "objects",
+        "location",
+        "management",
+        "digital",
+        "which",
         "planned",
-        "escape",
-        "time",
-        "isbn",
-        "create",
-        "lots"
+        "process",
+        "manufacturing",
+        "core",
+        "scope",
+        "materials",
+        "shown",
+        "plan",
+        "created",
+        "product",
+        "copy",
+        "only"
       ],
       "tcodes": [
-        "TS17"
+        "TS17",
+        "DB2",
+        "DB6",
+        "CFM1",
+        "CFM2",
+        "CFM4",
+        "CFM5",
+        "CFM7",
+        "LOC3",
+        "MM01",
+        "MM02",
+        "MAT1",
+        "SE38",
+        "SA38",
+        "MD74",
+        "TL1",
+        "RRP3",
+        "CDPS0",
+        "CR01",
+        "CR02",
+        "CFC9",
+        "RES01",
+        "CRC1"
       ],
       "tables": [
         "PRESS",
@@ -327,7 +590,26 @@
         "ISBN",
         "LCSH",
         "HANA",
-        "DDMRP"
+        "DDMRP",
+        "MSSQL",
+        "MSTQH",
+        "MARD",
+        "MARC",
+        "MSTEH",
+        "MSTBH",
+        "MSSQH",
+        "MSSAH",
+        "MSPRH",
+        "MSTQ",
+        "MSTE",
+        "MSTB",
+        "MSSQ",
+        "MSSA",
+        "MSPR",
+        "MSLB",
+        "MSKU",
+        "MSKA",
+        "MKOL"
       ]
     },
     {
@@ -352,59 +634,145 @@
         {
           "n": 11,
           "title": "Contents 5"
+        },
+        {
+          "n": 13,
+          "title": "Contents 7"
+        },
+        {
+          "n": 15,
+          "title": "Contents 10"
+        },
+        {
+          "n": 17,
+          "title": "Foreword As the world becomes more and more dynamic, complex, and data driven, ma"
+        },
+        {
+          "n": 19,
+          "title": "About This Book Genius is one percent inspiration and ninety-nine percent perspir"
+        },
+        {
+          "n": 21,
+          "title": "Target Audience Target Audience This book is addressed to you directly"
+        },
+        {
+          "n": 23,
+          "title": "Structure of This Book Organizational structures are the basis of everything in a"
+        },
+        {
+          "n": 25,
+          "title": "Acknowledgments Regarding the functionality of the core system, there are only mi"
+        },
+        {
+          "n": 27,
+          "title": "Chapter 1 Introduction to Plant Maintenance with SAP S/4HANA This chapter takes a"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 28 introduce the SAP HANA data"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 30 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 32 In 2014, the International"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 34 the failure of one machine"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 36 Each of these terms is used"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 38 These applications correspo"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 40"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 42 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Plant Maintenance with SAP S/4HANA 44 1"
         }
       ],
       "terms": [
         "maintenance",
-        "question",
-        "e-book",
         "plant",
-        "order",
-        "should",
-        "which",
-        "functional",
-        "user",
-        "locations",
-        "business",
+        "management",
+        "work",
         "technical",
-        "notification",
+        "asset",
+        "business",
+        "functional",
+        "systems",
         "system",
         "equipment",
-        "sap-press",
-        "completion",
-        "karl",
-        "liebst",
-        "ckel",
-        "publishing",
-        "hardcover",
-        "creating",
+        "which",
+        "apps",
+        "fiori",
         "book",
-        "plan",
-        "preventive",
-        "systems",
-        "work",
-        "shift",
-        "notes",
-        "rheinwerk",
+        "functions",
+        "example",
         "information",
+        "center",
+        "should",
+        "locations",
+        "other",
         "data",
-        "print",
+        "order",
+        "only",
+        "planning",
+        "structure",
+        "organizational",
+        "these",
+        "following",
+        "tasks",
+        "number",
+        "user",
+        "orders",
+        "individual",
+        "publishing",
         "copy",
-        "isbn",
-        "contents",
-        "summary",
-        "object",
-        "list"
+        "rheinwerk",
+        "personal",
+        "location"
       ],
       "tcodes": [
-        "TS192"
+        "TS192",
+        "SFW5",
+        "HTML5",
+        "ME51N",
+        "WDF21",
+        "IR01",
+        "SAP0",
+        "SAP004",
+        "SAP008"
       ],
       "tables": [
         "PRESS",
         "LCCN",
         "ISBN",
         "LCSH",
-        "HANA"
+        "HANA",
+        "RFID",
+        "BAPI",
+        "FMEA",
+        "INST",
+        "BRIM",
+        "MTTR",
+        "MTBR",
+        "MIRO",
+        "DAUNO",
+        "ARBEI"
       ]
     },
     {
@@ -428,55 +796,154 @@
         },
         {
           "n": 11,
-          "title": "Contents Part III Production Planning Workflows 6 Production Planning for Dis"
+          "title": "Contents Part III Production Planning Workflows 6 Production Planning for Discret"
+        },
+        {
+          "n": 13,
+          "title": "Contents 7"
+        },
+        {
+          "n": 15,
+          "title": "Contents 9"
+        },
+        {
+          "n": 17,
+          "title": "Contents 11"
+        },
+        {
+          "n": 19,
+          "title": "Contents 13 Material Requirements Planning 671 13"
+        },
+        {
+          "n": 21,
+          "title": "Contents 14"
+        },
+        {
+          "n": 23,
+          "title": "Contents 18 Production Engineering and Operations 957 18"
+        },
+        {
+          "n": 25,
+          "title": "Contents 20"
+        },
+        {
+          "n": 27,
+          "title": "Acknowledgments Like my previous seven books, this book is dedicated to the lovin"
+        },
+        {
+          "n": 29,
+          "title": "Preface Logistics and supply chain management today are far more volatile, uncert"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 38 the following sections, w"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 40 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 42 Process Manufacturing Pro"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 44 Repetitive Manufacturing"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 46"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 48 Capacity Requirements Pla"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 50 The WIP, overhead, varian"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Production Planning with SAP S/4HANA 52 Master Data Material mast"
         }
       ],
       "terms": [
         "production",
-        "process",
         "planning",
-        "e-book",
-        "confirmation",
-        "materials",
-        "manufacturing",
-        "bill",
-        "control",
-        "order",
-        "types",
+        "process",
         "material",
-        "scheduling",
+        "manufacturing",
+        "order",
+        "requirements",
+        "system",
         "master",
-        "sap-press",
-        "configuration",
-        "contents",
-        "summary",
-        "profile",
-        "orders",
-        "instruction",
-        "edition",
-        "copy",
-        "overview",
-        "work",
-        "center",
-        "parameters",
-        "data",
-        "creating",
-        "repetitive",
-        "goods",
-        "rheinwerk",
+        "business",
         "management",
-        "hardcover",
-        "print",
+        "available",
+        "control",
+        "capacity",
+        "kanban",
+        "processes",
+        "materials",
+        "which",
+        "orders",
+        "data",
+        "discrete",
+        "work",
+        "types",
+        "sales",
+        "operations",
+        "replenishment",
+        "configuration",
+        "product",
+        "supply",
+        "transaction",
+        "type",
+        "repetitive",
         "cost",
-        "define",
-        "points",
-        "automatic",
-        "planned"
+        "demand",
+        "book",
+        "company",
+        "structure",
+        "scheduling",
+        "planned",
+        "batch"
       ],
-      "tcodes": [],
+      "tcodes": [
+        "CS01",
+        "CR01",
+        "CRC1",
+        "MF50",
+        "CA01",
+        "CS21",
+        "CO01",
+        "COR1",
+        "LDE1",
+        "CO11N",
+        "COR6N",
+        "CO04",
+        "MF51",
+        "CO15",
+        "SM38",
+        "MD04",
+        "SAP9"
+      ],
       "tables": [
         "PRESS",
-        "ISBN"
+        "ISBN",
+        "HANA",
+        "PART",
+        "DDMRP",
+        "COGM",
+        "COGS",
+        "COMAC",
+        "COHV",
+        "MDVP",
+        "MFBF",
+        "COPI",
+        "CORK",
+        "CORM",
+        "ABAP"
       ]
     },
     {
@@ -501,55 +968,134 @@
         {
           "n": 11,
           "title": "Contents 6 Integrating with SAP S/4HANA Sales 309 6"
+        },
+        {
+          "n": 13,
+          "title": "Contents PART III Quality Management Workflow Tools 9 Batch Management 389 9"
+        },
+        {
+          "n": 15,
+          "title": "Contents 11 Quality Certificates 501 11"
+        },
+        {
+          "n": 17,
+          "title": "Contents 14"
+        },
+        {
+          "n": 19,
+          "title": "Contents 16"
+        },
+        {
+          "n": 21,
+          "title": "Contents 18"
+        },
+        {
+          "n": 23,
+          "title": "Acknowledgments Like all my previous books and several E-Bites for SAP PRESS, thi"
+        },
+        {
+          "n": 25,
+          "title": "Preface A company that"
+        },
+        {
+          "n": 27,
+          "title": "Target Audience Due to the extensive nature of the details involved in maintainin"
+        },
+        {
+          "n": 29,
+          "title": "Structure and Content the system"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 36"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 38 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 40 1"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 42 1"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 44 chain with the goal of ensuring that the qua"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 46 2"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 48"
+        },
+        {
+          "n": 1,
+          "title": "Quality Management in SAP S/4HANA 50 process only begins after the quality result"
         }
       ],
       "terms": [
-        "inspection",
         "quality",
-        "master",
         "management",
-        "e-book",
+        "inspection",
         "business",
+        "processes",
+        "master",
+        "system",
+        "process",
+        "data",
+        "product",
+        "control",
+        "company",
+        "production",
+        "which",
+        "material",
+        "other",
+        "planning",
+        "areas",
+        "goods",
+        "change",
+        "batch",
+        "plan",
+        "logistics",
         "type",
         "configuration",
-        "equipment",
-        "data",
-        "processes",
-        "test",
-        "order",
-        "production",
-        "planning",
-        "material",
-        "basics",
-        "summary",
-        "sap-press",
-        "edition",
-        "plant",
-        "maintenance",
-        "contents",
-        "characteristics",
-        "settings",
-        "hardcover",
-        "control",
-        "number",
-        "copy",
-        "process",
-        "integrating",
-        "checklist",
-        "subcontracting",
-        "jawad",
-        "akhtar",
-        "warehouse",
-        "usage",
+        "engineering",
         "sales",
         "record",
-        "delivery"
+        "book",
+        "test",
+        "notification",
+        "must",
+        "plant",
+        "integration",
+        "structure",
+        "equipment",
+        "area",
+        "organizational",
+        "document",
+        "information"
       ],
-      "tcodes": [],
+      "tcodes": [
+        "MM02",
+        "RM17",
+        "MM01"
+      ],
       "tables": [
         "PRESS",
         "ISBN",
-        "PART"
+        "PART",
+        "FMEA",
+        "SPRO",
+        "LIMS",
+        "COGS",
+        "NPDI",
+        "GAAP",
+        "QMIS"
       ]
     },
     {
@@ -577,67 +1123,152 @@
         },
         {
           "n": 11,
-          "title": "Preface SAP Fiori App IDs An SAP Fiori app ID can be found in the About inf"
+          "title": "Preface SAP Fiori App IDs An SAP Fiori app ID can be found in the About informati"
         },
         {
           "n": 13,
-          "title": "Preface This project came about after a lengthy discussion with Emily Nicholls,"
+          "title": "Preface This project came about after a lengthy discussion with Emily Nicholls, w"
         },
         {
           "n": 15,
           "title": "Introduction If you"
+        },
+        {
+          "n": 17,
+          "title": "Introduction The SAP Fiori overhaul as part of the launch of SAP Fiori 2"
+        },
+        {
+          "n": 19,
+          "title": "Introduction SAP Fiori Elements Have you ever noticed that standard SAP Fiori app"
+        },
+        {
+          "n": 21,
+          "title": "Introduction Figure 7 Transactional App Example"
+        },
+        {
+          "n": 23,
+          "title": "Introduction Roles SAP Fiori is a role-based application"
+        },
+        {
+          "n": 25,
+          "title": "Chapter 1 Financial Accounting SAP Fiori apps play a crucial role in modern finan"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 26"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 28 schedule the Post Periodic Accruals and Simu - late Accru"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 30 Analyze Clearing Locks"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 32 analysis using search parameters such as the key figure l"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 34 Analyze External Collections Volume"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 36 Tip SAP recommends activating business func - tion FICA"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 38 Transaction Code The equivalent transaction in SAP GUI is"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 40 Application Jobs"
+        },
+        {
+          "n": 1,
+          "title": "Financial Accounting 42 Consult SAP Notes 2798214, 2798215, 3484638, and 2867794"
         }
       ],
       "terms": [
+        "type",
+        "bank",
         "fiori",
-        "apps",
-        "book",
-        "management",
-        "e-book",
-        "business",
-        "planning",
-        "quality",
-        "these",
-        "been",
-        "their",
-        "process",
-        "system",
-        "preface",
-        "copy",
-        "work",
-        "include",
-        "writing",
-        "explains",
-        "support",
-        "thank",
-        "rheinwerk",
-        "production",
-        "sales",
-        "which",
-        "would",
-        "they",
-        "publishing",
-        "user",
-        "financial",
-        "maintenance",
-        "personal",
-        "functionality",
-        "sap-press",
         "transaction",
-        "codes",
-        "transactions",
-        "controlling",
+        "apps",
+        "data",
+        "application",
+        "cash",
+        "account",
+        "display",
+        "accounts",
         "accounting",
-        "many"
+        "items",
+        "financial",
+        "code",
+        "date",
+        "business",
+        "which",
+        "addition",
+        "management",
+        "company",
+        "view",
+        "analytical",
+        "transactional",
+        "based",
+        "analyze",
+        "search",
+        "currency",
+        "allows",
+        "provides",
+        "balance",
+        "contract",
+        "features",
+        "tion",
+        "amount",
+        "system",
+        "transactions",
+        "these",
+        "revenue",
+        "ledger"
       ],
       "tcodes": [
-        "UI5"
+        "UI5",
+        "FF7A",
+        "FBL5N",
+        "FD10N",
+        "FPM3",
+        "FPE3",
+        "KCH1",
+        "KSH1",
+        "AR01",
+        "AW01N",
+        "AR02",
+        "AR31",
+        "AR05",
+        "FB15",
+        "TPM10",
+        "ACT01",
+        "OB58",
+        "FI01",
+        "FI02",
+        "FI03",
+        "UDM000",
+        "FF7B"
       ],
       "tables": [
         "PRESS",
         "ISBN",
         "FMEA",
-        "ABAP"
+        "ABAP",
+        "HANA",
+        "OBYC",
+        "FPRH",
+        "SICF",
+        "IWFND",
+        "SWIFT",
+        "BAUP",
+        "IFRS"
       ]
     },
     {
@@ -673,11 +1304,11 @@
         },
         {
           "n": 7,
-          "title": "Table of Contents Dear Reader Notes on Usage Table of Contents Foreword from Fra"
+          "title": "Table of Contents Dear Reader Notes on Usage Table of Contents Foreword from Fran"
         },
         {
           "n": 15,
-          "title": "Foreword from Franz Hero The pace of global supply chains has increased tremendo"
+          "title": "Foreword from Franz Hero The pace of global supply chains has increased tremendou"
         },
         {
           "n": 17,
@@ -685,60 +1316,80 @@
         },
         {
           "n": 19,
-          "title": "Preface We are grateful to our readers for an excellent response to the first ed"
+          "title": "Preface We are grateful to our readers for an excellent response to the first edi"
         },
         {
           "n": 21,
           "title": "We recommend starting with the introductory chapter for the basics of the S&OP pr"
+        },
+        {
+          "n": 24,
+          "title": "Chapter 12"
+        },
+        {
+          "n": 25,
+          "title": "Conclusion This book will provide you with comprehensive knowledge of S&OP proces"
+        },
+        {
+          "n": 27,
+          "title": "I dedicate this book to the dynamic supply chain and logistics professionals"
         }
       ],
       "terms": [
         "planning",
         "supply",
+        "data",
         "process",
+        "business",
+        "demand",
+        "integrated",
         "sales",
         "operations",
-        "book",
-        "business",
-        "data",
         "chain",
-        "processes",
-        "demand",
-        "management",
-        "integration",
-        "integrated",
-        "summary",
-        "analytics",
-        "e-book",
-        "collaboration",
-        "review",
-        "performance",
-        "knowledge",
-        "financial",
-        "through",
-        "advanced",
-        "configuration",
-        "creating",
-        "system",
-        "indicators",
+        "which",
+        "master",
+        "model",
         "solution",
-        "copy",
         "time",
-        "between",
-        "detailed",
-        "figures",
-        "applications",
+        "management",
+        "product",
+        "processes",
+        "inventory",
+        "their",
+        "collaboration",
         "plan",
-        "heuristic",
-        "cloud",
-        "production",
-        "these"
+        "companies",
+        "optimization",
+        "book",
+        "copy",
+        "excel",
+        "level",
+        "personal",
+        "rheinwerk",
+        "publishing",
+        "erent",
+        "boston",
+        "network",
+        "peerly",
+        "kazes",
+        "peerlyka",
+        "cbccom",
+        "fiori",
+        "customer"
       ],
-      "tcodes": [],
+      "tcodes": [
+        "HTML5"
+      ],
       "tables": [
         "ISBN",
         "PRESS",
-        "EPUB"
+        "EPUB",
+        "HANA",
+        "APICS",
+        "HTML",
+        "DDMRP",
+        "SCOR",
+        "SAML"
       ]
     },
     {
@@ -763,56 +1414,128 @@
         {
           "n": 11,
           "title": "Contents 7 Inventory Management 237 7"
+        },
+        {
+          "n": 13,
+          "title": "Contents 9"
+        },
+        {
+          "n": 15,
+          "title": "Contents 11"
+        },
+        {
+          "n": 17,
+          "title": "Contents 14"
+        },
+        {
+          "n": 19,
+          "title": "Contents 18 Conclusion 685 18"
+        },
+        {
+          "n": 21,
+          "title": "Foreword It is an honor to introduce the third edition of Sourcing and Procuremen"
+        },
+        {
+          "n": 23,
+          "title": "Preface This is the third edition of Sourcing and Procurement with SAP S/4HANA ,"
+        },
+        {
+          "n": 25,
+          "title": "Structure of This Book remaining chapters cover the major procurement solution ar"
+        },
+        {
+          "n": 27,
+          "title": "Structure of This Book"
+        },
+        {
+          "n": 29,
+          "title": "Acknowledgments Acknowledgments Many colleagues and friends made significant cont"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 32 or government"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 34 Pushing procurement down to the emplo"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 36 set of internal procurement intricaci"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 38 One of the challenges ERP systems fac"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 40 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 42 however, are hosted and thus not tech"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 44 Figure 1"
+        },
+        {
+          "n": 1,
+          "title": "Introduction to Sourcing and Procurement 46 inventory management, and plan-driven"
         }
       ],
       "terms": [
         "procurement",
-        "e-book",
-        "inventory",
-        "management",
-        "purchase",
-        "contract",
         "sourcing",
-        "material",
-        "stock",
-        "summary",
-        "master",
-        "planning",
-        "sap-press",
-        "purchasing",
-        "contents",
-        "configuring",
-        "collaboration",
-        "goods",
-        "physical",
-        "information",
-        "edition",
-        "copy",
-        "business",
-        "order",
-        "apps",
-        "field",
-        "ariba",
-        "hardcover",
-        "implementation",
-        "operational",
+        "management",
         "cloud",
-        "versus",
-        "options",
+        "ariba",
+        "business",
+        "supplier",
+        "system",
+        "contract",
+        "process",
+        "invoice",
+        "network",
+        "processes",
+        "enterprise",
+        "edition",
+        "implementation",
+        "organization",
+        "purchase",
         "integration",
-        "what",
-        "processing",
+        "data",
+        "areas",
+        "options",
+        "services",
+        "solutions",
+        "collaboration",
+        "core",
+        "central",
+        "inventory",
+        "strategic",
+        "environment",
+        "product",
+        "purchasing",
+        "on-premise",
         "direct",
-        "scheduling",
-        "agreement",
-        "orders"
+        "these",
+        "which",
+        "systems",
+        "option",
+        "well",
+        "operational"
       ],
       "tcodes": [],
       "tables": [
         "PRESS",
         "ISBN",
         "SERV",
-        "HTML"
+        "HTML",
+        "COVID",
+        "HANA",
+        "BYOL",
+        "JAVA"
       ]
     }
   ]

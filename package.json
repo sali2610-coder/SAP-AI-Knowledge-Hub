@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "kb:index": "node scripts/index-kb.mjs"
+    "kb:index": "node scripts/index-kb.mjs",
+    "kb:full-index": "FULL_SCAN=1 node scripts/index-kb.mjs"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.179",

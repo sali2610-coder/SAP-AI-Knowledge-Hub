@@ -1,20 +1,30 @@
 import type { Metadata } from "next";
-import { Heebo, Geist_Mono } from "next/font/google";
+import { Heebo, Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { LanguageEffect } from "@/components/site/language-effect";
 import { ThemeEffect } from "@/components/site/theme-effect";
 import { ThemeScript } from "@/components/site/theme-script";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+// Heebo covers Hebrew text (RTL default). Inter handles English UI. Fira Code
+// is used inside `<code>` blocks - the tabular figures and tighter glyphs read
+// better next to SAP tcode patterns like MD01N / ME21N.
 const heebo = Heebo({
   variable: "--font-sans",
   subsets: ["latin", "hebrew"],
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const geistMono = Fira_Code({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +45,7 @@ export default function RootLayout({
       dir="rtl"
       suppressHydrationWarning
       data-theme="dark"
-      className={`${heebo.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${heebo.variable} ${inter.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <head>
         <ThemeScript />

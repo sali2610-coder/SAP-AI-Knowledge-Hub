@@ -59,16 +59,16 @@ export function CodeBlock({
   }, [copied]);
 
   return (
-    <div className="group relative my-3 overflow-hidden rounded-xl border border-foreground/10 bg-[#0b1020]">
-      <div className="flex items-center justify-between border-b border-foreground/5 px-3 py-1.5">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+    <div className="group relative my-3 overflow-hidden rounded-xl border border-foreground/10 bg-[var(--code-bg)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
           {label}
         </span>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+          className="h-7 gap-1 px-2 text-[11px] text-zinc-300 hover:text-white"
           onClick={() => {
             navigator.clipboard.writeText(value).then(() => setCopied(true));
           }}

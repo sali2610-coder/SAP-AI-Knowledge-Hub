@@ -13,9 +13,13 @@ const KB_DIR = path.join(ROOT, "knowledge-base");
 const OUT_DIR = path.join(KB_DIR, ".index");
 const LIB_INDEX = path.join(ROOT, "lib", "kb-index.json");
 
-const PAGE_BUDGET = 80;        // pages read per book
-const TEXT_BUDGET = 25_000;    // chars saved per book
+const FULL_SCAN = process.env.FULL_SCAN === "1";
+const PAGE_BUDGET = FULL_SCAN ? Infinity : 300;   // full-index scans every page
+const TEXT_BUDGET = FULL_SCAN ? 600_000 : 150_000; // chars saved per book
 const TERM_LIMIT = 40;         // top terms per book
+const PARA_TARGET = 520;       // soft char target per RAG paragraph chunk
+const PARA_MIN = 180;          // skip noise (page numbers, headers)
+const PARA_MAX = 900;
 
 const MODULE_HINTS = [
   { rx: /production planning|pp[-\s]?ds/i, module: "PP", agents: ["pp", "architect"] },
@@ -44,6 +48,31 @@ function prettyTitle(name) {
     .replace(/__\s*copy.*$/i, "")
     .replace(/\b[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}\b/g, "")
     .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeHexBlob(title) {
+  return /^[a-f0-9]{20,}$/i.test(title.replace(/\s+/g, ""));
+}
+
+function deriveTitleFromText(text) {
+  if (!text) return null;
+  const firstChunk = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 280);
+  const sentence = firstChunk.split(/[.!?\n]/)[0]?.trim();
+  if (!sentence) return null;
+  const cleaned = sentence
+    .replace(/email[:\s].*$/i, "")
+    .replace(/call\s*\/?\s*whatsapp.*$/i, "")
+    .replace(/\bwww\.[^\s]+/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length < 8) return null;
+  return cleaned
+    .slice(0, 90)
+    .replace(/^\s*\d+\s*/, "")
     .trim();
 }
 
@@ -121,8 +150,10 @@ async function loadPdfLib() {
 
 async function extractPdfText(pdfjs, filePath) {
   const data = new Uint8Array(await fs.readFile(filePath));
+  const standardFontDataUrl = `file://${path.join(ROOT, "node_modules/pdfjs-dist/standard_fonts")}/`;
   const loadingTask = pdfjs.getDocument({
     data,
+    standardFontDataUrl,
     disableFontFace: true,
     useSystemFonts: false,
     isEvalSupported: false,
@@ -132,22 +163,112 @@ async function extractPdfText(pdfjs, filePath) {
   const pagesToRead = Math.min(totalPages, PAGE_BUDGET);
 
   let combined = "";
+  const pages = [];
   for (let i = 1; i <= pagesToRead; i++) {
     try {
       const page = await doc.getPage(i);
       const content = await page.getTextContent();
-      const pageText = content.items.map((it) => (it && it.str) || "").join(" ");
-      combined += "\n\n" + pageText;
+      const pageText = content.items
+        .map((it) => (it && it.str) || "")
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (pageText) {
+        pages.push({ n: i, text: pageText });
+        combined += "\n\n" + pageText;
+      }
       if (combined.length > TEXT_BUDGET * 1.4) break;
     } catch {
-      // Skip unreadable page.
       continue;
     }
   }
 
   await doc.cleanup();
   await doc.destroy();
-  return { text: combined.slice(0, TEXT_BUDGET), totalPages };
+  return { text: combined.slice(0, TEXT_BUDGET), pages, totalPages };
+}
+
+// Split a single page's text into RAG paragraphs (soft target ~520 chars).
+function chunkPage(pageText) {
+  const sentences = pageText.split(/(?<=[.!?])\s+(?=[A-Z])/);
+  const chunks = [];
+  let buf = "";
+  for (const s of sentences) {
+    if ((buf + " " + s).trim().length > PARA_MAX && buf.length >= PARA_MIN) {
+      chunks.push(buf.trim());
+      buf = s;
+    } else {
+      buf = buf ? buf + " " + s : s;
+      if (buf.length >= PARA_TARGET && /[.!?]\s*$/.test(buf)) {
+        chunks.push(buf.trim());
+        buf = "";
+      }
+    }
+  }
+  if (buf.trim().length >= PARA_MIN) chunks.push(buf.trim());
+  return chunks;
+}
+
+// English + Hebrew tokenizer for BM25.
+function tokenize(s) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9_֐-׿\s\-]/g, " ")
+    .split(/\s+/)
+    .filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+}
+
+function buildSearchIndex(books) {
+  const docs = [];
+  for (const b of books) {
+    for (const para of b._paragraphs) {
+      docs.push({
+        id: `${b.slug}::p${para.page}::c${para.idx}`,
+        bookSlug: b.slug,
+        bookTitle: b.title,
+        module: b.module,
+        page: para.page,
+        chunkIndex: para.idx,
+        text: para.text,
+      });
+    }
+  }
+
+  const df = new Map();
+  const docTokens = docs.map((d) => {
+    const toks = tokenize(d.text);
+    const unique = new Set(toks);
+    for (const u of unique) df.set(u, (df.get(u) || 0) + 1);
+    return toks;
+  });
+
+  const N = docs.length;
+  const idf = {};
+  for (const [term, n] of df.entries()) {
+    idf[term] = Math.log(1 + (N - n + 0.5) / (n + 0.5));
+  }
+
+  const avgLen =
+    docs.length === 0
+      ? 0
+      : docTokens.reduce((acc, t) => acc + t.length, 0) / docTokens.length;
+
+  return {
+    avgLen,
+    N,
+    idf,
+    docs: docs.map((d, i) => ({
+      ...d,
+      len: docTokens[i].length,
+      tf: termFreq(docTokens[i]),
+    })),
+  };
+}
+
+function termFreq(tokens) {
+  const tf = {};
+  for (const t of tokens) tf[t] = (tf[t] || 0) + 1;
+  return tf;
 }
 
 async function main() {
@@ -167,26 +288,57 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Indexing ${pdfs.length} PDFs from knowledge-base/`);
+  console.log(`Indexing ${pdfs.length} PDFs from knowledge-base/ [${FULL_SCAN ? "FULL SCAN - all pages" : `up to ${PAGE_BUDGET} pages`}]`);
 
   const pdfjs = await loadPdfLib();
   const index = [];
 
   for (const file of pdfs) {
-    const title = prettyTitle(file);
+    let title = prettyTitle(file);
     const slug = slugify(file);
-    const { module, agents } = detectModule(title);
+    let { module, agents } = detectModule(title);
     const abs = path.join(KB_DIR, file);
 
     process.stdout.write(`- ${title} ... `);
     try {
-      const { text, totalPages } = await extractPdfText(pdfjs, abs);
+      const { text, pages, totalPages } = await extractPdfText(pdfjs, abs);
       const { keywords, tcodes, tables } = topTerms(text);
       const chapters = detectChapters(text);
 
-      await fs.writeFile(path.join(OUT_DIR, `${slug}.txt`), text, "utf8");
+      // If the filename was a hex blob, derive a real title from the cover
+      // page text and re-classify the module.
+      if (looksLikeHexBlob(title)) {
+        const derived = deriveTitleFromText(text);
+        if (derived) {
+          title = derived;
+          const reclassified = detectModule(derived);
+          if (reclassified.module !== "General") {
+            module = reclassified.module;
+            agents = reclassified.agents;
+          } else {
+            module = "Foundation";
+            agents = ["architect"];
+          }
+          console.log(`  (derived title: "${title}", module: ${module})`);
+        }
+      }
 
-      index.push({
+      await fs.writeFile(path.join(OUT_DIR, `${slug}.txt`), text, "utf8");
+      await fs.writeFile(
+        path.join(OUT_DIR, `${slug}.pages.json`),
+        JSON.stringify({ slug, pages }, null, 0),
+        "utf8",
+      );
+
+      const paragraphs = [];
+      for (const pg of pages) {
+        const chunks = chunkPage(pg.text);
+        chunks.forEach((c, i) =>
+          paragraphs.push({ page: pg.n, idx: i, text: c }),
+        );
+      }
+
+      const entry = {
         slug,
         title,
         file,
@@ -197,8 +349,15 @@ async function main() {
         terms: keywords,
         tcodes,
         tables,
+      };
+      Object.defineProperty(entry, "_paragraphs", {
+        value: paragraphs,
+        enumerable: false,
       });
-      console.log(`ok (${totalPages}p, ${keywords.length} terms, ${tcodes.length} tcodes)`);
+      index.push(entry);
+      console.log(
+        `ok (${totalPages}p extracted=${pages.length}, ${paragraphs.length} chunks, ${tcodes.length} tcodes)`,
+      );
     } catch (err) {
       console.log(`failed: ${err.message}`);
       index.push({
@@ -224,8 +383,12 @@ async function main() {
   await fs.mkdir(path.dirname(LIB_INDEX), { recursive: true });
   await fs.writeFile(LIB_INDEX, json, "utf8");
 
+  // Build and write the BM25 search index used by lib/rag.ts.
+  const search = buildSearchIndex(index);
+  const searchPath = path.join(ROOT, "lib", "kb-search-index.json");
+  await fs.writeFile(searchPath, JSON.stringify(search), "utf8");
   console.log(
-    `\nWrote ${index.length} entries to ${path.relative(ROOT, OUT_DIR)} and ${path.relative(ROOT, LIB_INDEX)}`,
+    `\nWrote ${index.length} books, ${search.docs.length} RAG chunks (${Math.round(search.avgLen)} avg tokens) to ${path.relative(ROOT, LIB_INDEX)} + ${path.relative(ROOT, searchPath)}`,
   );
 }
 

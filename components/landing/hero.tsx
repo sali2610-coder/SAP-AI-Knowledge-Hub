@@ -4,28 +4,29 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { BackgroundBeams } from "./background-beams";
+import { RagSearch } from "./rag-search";
 import { buttonVariants } from "@/components/ui/button";
 import { useHubStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const COPY = {
   he: {
-    eyebrow: "SAP Press בעברית - שיחה חיה",
+    eyebrow: "Horizon · BM25 RAG חי",
     h1: "ה-Copilot של מיישמי SAP.",
-    h1Accent: "ספרי הליבה הופכים לשיחה.",
-    sub: "ארבעה סוכנים מתמחים, רנדור תרשימי זרימה, ABAP ו-Tosca עם הדגשת תחביר ואזכורי מקור בכל תשובה. בנוי לעולם הטרנספורמציה ל-S/4HANA.",
-    cta: "פתח את הצ׳אט",
-    secondary: "צפה בספריה",
-    chip: "Multi-Agent RAG - בעברית",
+    h1Accent: "9 ספרי SAP Press, 3,024 מקטעים לחיפוש מיידי.",
+    sub: "חיפוש סמנטי אמיתי על פני קורפוס מאונדקס. כל תשובה מציינת ספר, עמוד ופסקה. ECC מזוהה ומופרד מ-S/4HANA אוטומטית.",
+    cta: "פתח צ׳אט",
+    secondary: "פתח ספרייה",
+    chip: "Belize Horizon · Glass · Framer",
   },
   en: {
-    eyebrow: "SAP Press, conversational",
+    eyebrow: "Horizon · live BM25 RAG",
     h1: "The Copilot for SAP implementers.",
-    h1Accent: "Core books, turned into a conversation.",
-    sub: "Four specialist agents, mermaid flowcharts, ABAP and Tosca with syntax highlighting, and source citations on every answer. Built for the S/4HANA transformation.",
-    cta: "Open the chat",
+    h1Accent: "Nine SAP Press titles, 3,024 searchable passages.",
+    sub: "Real semantic search over an indexed corpus. Every answer cites book, page and paragraph. ECC is auto-detected and kept separate from S/4HANA.",
+    cta: "Open chat",
     secondary: "Browse library",
-    chip: "Multi-Agent RAG",
+    chip: "Belize Horizon · Glass · Framer",
   },
 } as const;
 
@@ -45,7 +46,7 @@ export function Hero() {
           transition={{ duration: 0.6 }}
           className="glass-panel inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-foreground/80"
         >
-          <Sparkles className="h-3.5 w-3.5 text-violet-300" />
+          <Sparkles className="h-3.5 w-3.5 text-accent" />
           {t.eyebrow}
         </motion.span>
 
@@ -53,10 +54,10 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="text-balance mt-6 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl"
+          className="text-balance mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.02em] sm:text-6xl"
         >
           {t.h1}{" "}
-          <span className="bg-gradient-to-br from-violet-300 via-fuchsia-300 to-amber-200 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-br from-[color:var(--primary)] via-[oklch(0.75_0.20_251)] to-[color:var(--accent)] bg-clip-text text-transparent">
             {t.h1Accent}
           </span>
         </motion.h1>
@@ -84,7 +85,7 @@ export function Hero() {
             <Arrow className="h-4 w-4" />
           </Link>
           <Link
-            href="#library"
+            href="/library"
             className={cn(
               buttonVariants({ size: "lg", variant: "ghost" }),
               "h-11 rounded-full px-7 text-sm",
@@ -98,10 +99,14 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.6 }}
-          className="mt-10 text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70"
+          className="mt-8 text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70"
         >
           {t.chip}
         </motion.span>
+
+        <div className="mt-10 w-full">
+          <RagSearch />
+        </div>
       </div>
     </section>
   );

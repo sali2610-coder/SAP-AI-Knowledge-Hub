@@ -19,11 +19,21 @@ function summarize(text: string, max = 56) {
   return t.length > max ? t.slice(0, max - 1) + "…" : t;
 }
 
+export interface Bookmark {
+  paragraphId: string;
+  bookSlug: string;
+  bookTitle: string;
+  excerpt: string;
+  chapterTitle: string;
+  addedAt: number;
+}
+
 interface HubState {
   language: Language;
   theme: ThemeMode;
   activeAgentId: AgentId;
   conversations: Record<string, Conversation>;
+  bookmarks: Record<string, Bookmark>;
   activeId: string | null;
   hydrated: boolean;
 }
@@ -45,6 +55,8 @@ interface HubActions {
   ) => void;
   prepareRegenerate: () => { conversationId: string; lastUserText: string } | null;
   renameConversation: (id: string, title: string) => void;
+  toggleBookmark: (b: Bookmark) => boolean;
+  removeBookmark: (paragraphId: string) => void;
   markHydrated: () => void;
 }
 
@@ -55,6 +67,7 @@ export const useHubStore = create<HubState & HubActions>()(
       theme: "dark",
       activeAgentId: DEFAULT_AGENT_ID,
       conversations: {},
+      bookmarks: {},
       activeId: null,
       hydrated: false,
 
@@ -207,6 +220,25 @@ export const useHubStore = create<HubState & HubActions>()(
         return { conversationId: conv.id, lastUserText: lastUser.content };
       },
 
+      toggleBookmark: (b) => {
+        const exists = !!get().bookmarks[b.paragraphId];
+        set((s) => {
+          const next = { ...s.bookmarks };
+          if (exists) delete next[b.paragraphId];
+          else next[b.paragraphId] = b;
+          return { bookmarks: next };
+        });
+        return !exists;
+      },
+
+      removeBookmark: (paragraphId) => {
+        set((s) => {
+          const next = { ...s.bookmarks };
+          delete next[paragraphId];
+          return { bookmarks: next };
+        });
+      },
+
       renameConversation: (id, title) => {
         const conv = get().conversations[id];
         if (!conv) return;
@@ -222,6 +254,7 @@ export const useHubStore = create<HubState & HubActions>()(
         theme: state.theme,
         activeAgentId: state.activeAgentId,
         conversations: state.conversations,
+        bookmarks: state.bookmarks,
         activeId: state.activeId,
       }),
       onRehydrateStorage: () => (state) => {

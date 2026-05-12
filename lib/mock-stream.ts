@@ -1,6 +1,7 @@
 import type { AgentId, Citation, Language } from "./types";
 import { getAgent } from "./agents";
 import { kbIndex } from "./kb";
+import { retrieve, isGrounded, formatCitation } from "./rag";
 
 interface MockInput {
   prompt: string;
@@ -41,12 +42,12 @@ function ppAnswer(prompt: string, language: Language): string {
       "",
       "```mermaid",
       "flowchart LR",
-      "    A[דרישה שיווקית] --> B[Sales Order / Forecast]",
-      "    B --> C[MD01N - MRP Live]",
-      "    C --> D{מקור כיסוי?}",
-      "    D -- ייצור --> E[Planned Order]",
-      "    D -- רכש --> F[Purchase Requisition]",
-      "    E --> G[MD04 - Stock Requirements]",
+      "    A[\"דרישה שיווקית\"] --> B[\"Sales Order or Forecast\"]",
+      "    B --> C[\"MD01N - MRP Live\"]",
+      "    C --> D{\"מקור כיסוי\"}",
+      "    D -->|ייצור| E[\"Planned Order\"]",
+      "    D -->|רכש| F[\"Purchase Requisition\"]",
+      "    E --> G[\"MD04 - Stock Requirements\"]",
       "    F --> G",
       "```",
       "",
@@ -70,12 +71,12 @@ function ppAnswer(prompt: string, language: Language): string {
     "",
     "```mermaid",
     "flowchart LR",
-    "    A[Demand] --> B[Sales Order / Forecast]",
-    "    B --> C[MD01N - MRP Live]",
-    "    C --> D{Coverage source?}",
-    "    D -- Make --> E[Planned Order]",
-    "    D -- Buy --> F[Purchase Req]",
-    "    E --> G[MD04 - Stock Reqs]",
+    "    A[\"Demand\"] --> B[\"Sales Order or Forecast\"]",
+    "    B --> C[\"MD01N - MRP Live\"]",
+    "    C --> D{\"Coverage source\"}",
+    "    D -->|Make| E[\"Planned Order\"]",
+    "    D -->|Buy| F[\"Purchase Req\"]",
+    "    E --> G[\"MD04 - Stock Reqs\"]",
     "    F --> G",
     "```",
     "",
@@ -216,12 +217,12 @@ function architectAnswer(prompt: string, language: Language): string {
       "",
       "```mermaid",
       "flowchart TD",
-      "    A[Customer Request] --> B[Returns Order RE]",
-      "    B --> C[Returns Delivery]",
-      "    C --> D{Decision Code}",
-      "    D -- Refund --> E[Credit Memo]",
-      "    D -- Replace --> F[Free of Charge Delivery]",
-      "    D -- Scrap --> G[Scrapping Cost Center]",
+      "    A[\"Customer Request\"] --> B[\"Returns Order RE\"]",
+      "    B --> C[\"Returns Delivery\"]",
+      "    C --> D{\"Decision Code\"}",
+      "    D -->|Refund| E[\"Credit Memo\"]",
+      "    D -->|Replace| F[\"Free of Charge Delivery\"]",
+      "    D -->|Scrap| G[\"Scrapping Cost Center\"]",
       "```",
       "",
       "**Open Issues / Risks**",
@@ -238,12 +239,12 @@ function architectAnswer(prompt: string, language: Language): string {
     "",
     "```mermaid",
     "flowchart TD",
-    "    A[Customer Request] --> B[Returns Order RE]",
-    "    B --> C[Returns Delivery]",
-    "    C --> D{Decision Code}",
-    "    D -- Refund --> E[Credit Memo]",
-    "    D -- Replace --> F[Free of Charge Delivery]",
-    "    D -- Scrap --> G[Scrapping Cost Center]",
+    "    A[\"Customer Request\"] --> B[\"Returns Order RE\"]",
+    "    B --> C[\"Returns Delivery\"]",
+    "    C --> D{\"Decision Code\"}",
+    "    D -->|Refund| E[\"Credit Memo\"]",
+    "    D -->|Replace| F[\"Free of Charge Delivery\"]",
+    "    D -->|Scrap| G[\"Scrapping Cost Center\"]",
     "```",
     "",
     "**Open issues / risks**",
@@ -269,11 +270,49 @@ function genericAnswer(agentId: AgentId, prompt: string, language: Language): st
   return `${intro}${termsLine}`;
 }
 
+function isEccQuery(prompt: string): boolean {
+  // Explicit ECC / R/3 mention, not in passing comparison.
+  return /\b(ecc 6\.?0|ecc\b|r\/3|erp 6|netweaver|sap erp(?! s\/4))/i.test(prompt);
+}
+
+function eccDisclaimer(language: Language, agentName: string): string {
+  if (language === "he") {
+    return [
+      `**הודעת מקור - ECC**`,
+      "",
+      `שאלת על SAP ECC, אבל ה-Knowledge Base שלנו אינדקס *רק* את ספרי ה-S/4HANA Press. אין לי מקטעי טקסט אמיתיים מ-ECC להצביע עליהם.`,
+      "",
+      `אני (${agentName}) יכול לתת תשובה כללית על ECC מתוך הידע של המודל, אבל אסור לי לערבב אותה עם ציטוטי S/4HANA שיש לי באינדקס. אם תרצה תשובה גנרית על ECC, ציין במפורש "ענה מידע מודל בלבד, ללא ספרים".`,
+      "",
+      `**נקודות מפתח לזיהוי ECC לעומת S/4:**`,
+      "- ECC: טבלאות נפרדות (MARC, MARD, MBEW), MRP Classic, ABAP Classic, SAP GUI.",
+      "- S/4: ACDOCA אחיד, MRP Live ב-HANA, CDS Views, Clean Core, Fiori.",
+    ].join("\n");
+  }
+  return [
+    `**Source notice - ECC**`,
+    "",
+    `You asked about SAP ECC, but the indexed Knowledge Base contains *only* S/4HANA Press titles. I have no real ECC passages to cite.`,
+    "",
+    `I (${agentName}) can offer a general ECC answer from model knowledge, but I will not mix it with the S/4HANA quotes I do have. If you want a pure model-knowledge ECC answer, say "model only, no books".`,
+    "",
+    `**Key markers to distinguish ECC vs S/4:**`,
+    "- ECC: separate tables (MARC, MARD, MBEW), classic MRP, classic ABAP, SAP GUI.",
+    "- S/4: unified ACDOCA, MRP Live on HANA, CDS Views, Clean Core, Fiori.",
+  ].join("\n");
+}
+
 export function buildMockAnswer({ prompt, agentId, language }: MockInput): MockOutput {
   const lower = prompt.toLowerCase();
+  const ecc = isEccQuery(prompt);
+  const agentName = (language === "he" ? getAgent(agentId).he : getAgent(agentId).en).name;
 
   let text: string;
-  if (agentId === "tosca" || /tosca|t-box|tbox/.test(lower)) {
+  if (ecc) {
+    // Do NOT pivot to canned S/4 answers when the user explicitly asked about
+    // ECC. The corpus is S/4-only - be honest about it.
+    text = eccDisclaimer(language, agentName);
+  } else if (agentId === "tosca" || /tosca|t-box|tbox/.test(lower)) {
     text = toscaAnswer(prompt, language);
   } else if (agentId === "abap-s4" || /abap|cds|clean core|badi|rap/.test(lower)) {
     text = abapAnswer(prompt, language);
@@ -285,11 +324,49 @@ export function buildMockAnswer({ prompt, agentId, language }: MockInput): MockO
     text = genericAnswer(agentId, prompt, language);
   }
 
-  const books = pickBooks(agentId);
-  const citations: Citation[] = books.map((b) => ({
-    bookSlug: b.slug,
-    bookTitle: b.title,
-  }));
+  // Retrieval-augmented: pull real passages from the indexed corpus.
+  // Skip retrieval when the user asked about ECC since the corpus is S/4-only -
+  // mixing S/4 quotes into an ECC answer is the exact failure we're guarding against.
+  const hits = ecc ? [] : retrieve(prompt, 4);
+  const grounded = isGrounded(hits);
+
+  let citations: Citation[];
+  if (grounded) {
+    citations = hits.map(formatCitation);
+    const retrievedBlock =
+      language === "he"
+        ? [
+            "",
+            "---",
+            "**מקטעים שאוחזרו מהספרים (RAG):**",
+            ...hits.slice(0, 3).map((h, i) => {
+              const quote = h.doc.text.length > 200 ? h.doc.text.slice(0, 199) + "…" : h.doc.text;
+              return `\n${i + 1}. *${h.doc.bookTitle}* - עמוד ${h.doc.page}, פסקה ${h.doc.chunkIndex + 1}\n   > ${quote}`;
+            }),
+          ].join("\n")
+        : [
+            "",
+            "---",
+            "**Retrieved passages (RAG):**",
+            ...hits.slice(0, 3).map((h, i) => {
+              const quote = h.doc.text.length > 200 ? h.doc.text.slice(0, 199) + "…" : h.doc.text;
+              return `\n${i + 1}. *${h.doc.bookTitle}* - page ${h.doc.page}, paragraph ${h.doc.chunkIndex + 1}\n   > ${quote}`;
+            }),
+          ].join("\n");
+    text = text + retrievedBlock;
+  } else if (ecc) {
+    // ECC path: no citations at all - we already disclosed the gap in body.
+    citations = [];
+  } else {
+    // Fall back to default agent book mapping but mark clearly as world knowledge.
+    const fallback = pickBooks(agentId);
+    citations = fallback.map((b) => ({ bookSlug: b.slug, bookTitle: b.title }));
+    const note =
+      language === "he"
+        ? "\n\n---\n_מידע זה אינו מופיע ישירות בספרות המקצועית - התשובה מבוססת על ידע מודל כללי._"
+        : "\n\n---\n_This information is not directly cited in the indexed books - the answer is generated from world knowledge._";
+    text = text + note;
+  }
 
   return { text, citations };
 }

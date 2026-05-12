@@ -1,6 +1,7 @@
 import type { AgentId, Citation, Language } from "./types";
 import { getAgent } from "./agents";
 import { getBook } from "./kb";
+import { retrieve, isGrounded, formatCitation } from "./rag";
 
 interface ExplainInput {
   text: string;
@@ -100,7 +101,7 @@ export function buildExplain({
       .join("\n");
   }
 
-  const citations: Citation[] = book
+  let citations: Citation[] = book
     ? [
         {
           bookSlug: book.slug,
@@ -110,10 +111,25 @@ export function buildExplain({
       ]
     : [];
 
-  // Reference paragraph id is encoded into the citation chapter when present
-  // so the UI can deep-link back to the source row.
   if (citations[0] && paragraphId) {
     citations[0] = { ...citations[0], chapter: `${chapterTitle ?? "Source"} (${paragraphId.split("::p-").pop()})` };
+  }
+
+  // Augment with retrieval - related paragraphs from other books that match
+  // the selected passage. Adds breadth to the source pills without changing
+  // the primary chapter citation.
+  const hits = retrieve(text, 3);
+  if (isGrounded(hits)) {
+    const extras = hits
+      .map(formatCitation)
+      .filter(
+        (c) =>
+          !citations.some(
+            (existing) =>
+              existing.bookSlug === c.bookSlug && existing.chapter === c.chapter,
+          ),
+      );
+    citations = [...citations, ...extras].slice(0, 4);
   }
 
   return { text: body, citations, source };

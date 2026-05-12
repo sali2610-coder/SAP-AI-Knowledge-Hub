@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Globe, MessageSquare, Library } from "lucide-react";
+import { Globe, MessageSquare, Library, TestTube2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useHubStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,8 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { BackendBadge } from "@/components/site/backend-badge";
 
 const COPY = {
-  he: { chat: "פתח צ׳אט", switch: "English", library: "ספרייה" },
-  en: { chat: "Open chat", switch: "עברית", library: "Library" },
+  he: { chat: "פתח צ׳אט", switch: "English", library: "ספרייה", tosca: "Tosca FX" },
+  en: { chat: "Open chat", switch: "עברית", library: "Library", tosca: "Tosca FX" },
 } as const;
 
 export function TopBar({ minimal = false }: { minimal?: boolean }) {
@@ -37,6 +37,16 @@ export function TopBar({ minimal = false }: { minimal?: boolean }) {
           >
             <Library className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t.library}</span>
+          </Link>
+          <Link
+            href="/tosca"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "gap-1 text-xs",
+            )}
+          >
+            <TestTube2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t.tosca}</span>
           </Link>
           <ThemeToggle />
           <Button

@@ -36,7 +36,7 @@ export function ChatMarkdown({ text }: { text: string }) {
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="text-indigo-300 underline-offset-4 hover:underline"
+                className="text-primary underline-offset-4 hover:underline"
               >
                 {children}
               </a>
