@@ -1,0 +1,819 @@
+{
+  "generatedAt": "2026-05-11T18:35:23.589Z",
+  "books": [
+    {
+      "slug": "9f320f75348944ad9719a173d724b7b8",
+      "title": "9f320f75348944ad9719a173d724b7b8",
+      "file": "9f320f75348944ad9719a173d724b7b8.pdf",
+      "module": "General",
+      "agents": [
+        "architect"
+      ],
+      "pageCount": 193,
+      "chapters": [],
+      "terms": [
+        "business",
+        "zarantech",
+        "email",
+        "call",
+        "whatsapp",
+        "info",
+        "sales",
+        "finance",
+        "goods",
+        "process",
+        "order",
+        "customer",
+        "processes",
+        "vendor",
+        "functions",
+        "payment",
+        "enterprise",
+        "procurement",
+        "what",
+        "delivery",
+        "documents",
+        "purchase",
+        "integrated",
+        "invoice",
+        "enterprises",
+        "system",
+        "because",
+        "terms",
+        "need",
+        "core",
+        "inventory",
+        "operations",
+        "warehouse",
+        "company",
+        "every",
+        "end-to-end",
+        "learners",
+        "service",
+        "language",
+        "which"
+      ],
+      "tcodes": [],
+      "tables": [
+        "EBOOK",
+        "EMAIL",
+        "CALL"
+      ]
+    },
+    {
+      "slug": "configuring-plant-maintenance-in-sap-s4hana",
+      "title": "Configuring Plant Maintenance in SAP S4HANA",
+      "file": "Configuring Plant Maintenance in SAP S4HANA __ Copy 8c2w-6zg4-uifn-jht9.pdf",
+      "module": "PM",
+      "agents": [
+        "pm",
+        "architect"
+      ],
+      "pageCount": 729,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Acknowledgments"
+        },
+        {
+          "n": 9,
+          "title": "Contents 5 Configuring the Work Order Cycle 249 5"
+        },
+        {
+          "n": 11,
+          "title": "Contents 8"
+        },
+        {
+          "n": 13,
+          "title": "Acknowledgments I would like to thank everyone who contributed to the success of"
+        },
+        {
+          "n": 15,
+          "title": "About the Book If you plan for a year, plant a seed"
+        }
+      ],
+      "terms": [
+        "plant",
+        "maintenance",
+        "fiori",
+        "step",
+        "e-book",
+        "business",
+        "management",
+        "configuring",
+        "summary",
+        "launchpad",
+        "configure",
+        "edition",
+        "book",
+        "phase",
+        "apps",
+        "user",
+        "sap-press",
+        "hardcover",
+        "material",
+        "processing",
+        "copy",
+        "contents",
+        "create",
+        "rheinwerk",
+        "publishing",
+        "liebst",
+        "ckel",
+        "planning",
+        "isbn",
+        "functions",
+        "asset",
+        "order",
+        "customizing",
+        "karl",
+        "service",
+        "notes",
+        "personal",
+        "project",
+        "general",
+        "factors"
+      ],
+      "tcodes": [
+        "TS192"
+      ],
+      "tables": [
+        "PRESS",
+        "LCCN",
+        "ISBN",
+        "LCSH",
+        "HANA",
+        "KUAN",
+        "CHUNG"
+      ]
+    },
+    {
+      "slug": "integrating-warehouse-management-in-sap-s4hana",
+      "title": "Integrating Warehouse Management in SAP S4HANA",
+      "file": "Integrating Warehouse Management in SAP S4HANA __ Copy krgw-ebnu-yajz-smv6.pdf",
+      "module": "WM",
+      "agents": [
+        "wm",
+        "architect"
+      ],
+      "pageCount": 1341,
+      "chapters": [
+        {
+          "n": 2,
+          "title": "Shailesh Patil, Sudhakar Bandaru Integrating EWM in SAP S/4HANA"
+        },
+        {
+          "n": 3,
+          "title": "Imprint This e-book is a publication many contributed to, specifically"
+        },
+        {
+          "n": 4,
+          "title": "Notes on Usage This e-book is protected by copyright"
+        },
+        {
+          "n": 5,
+          "title": "Notes on the Screen Presentation You are reading this e-book in a file format"
+        },
+        {
+          "n": 6,
+          "title": "Table of Contents Notes on Usage Table of Contents Preface 1 Introduction to"
+        },
+        {
+          "n": 10,
+          "title": "Preface In today"
+        },
+        {
+          "n": 12,
+          "title": "Manufacturing companies Organizations engaged in production and assembly process"
+        },
+        {
+          "n": 13,
+          "title": "Structure of This Book This book"
+        },
+        {
+          "n": 14,
+          "title": "Chapter 3 The objective of this chapter is to serve as a comprehensive guide o"
+        },
+        {
+          "n": 15,
+          "title": "Chapter 7 This chapter provides an overview of yard logistics, including its f"
+        },
+        {
+          "n": 16,
+          "title": "References For more information on SAP EWM, visit the following websites"
+        }
+      ],
+      "terms": [
+        "management",
+        "integration",
+        "warehouse",
+        "processes",
+        "process",
+        "advanced",
+        "book",
+        "business",
+        "production",
+        "inbound",
+        "overview",
+        "manufacturing",
+        "outbound",
+        "their",
+        "options",
+        "system",
+        "embedded",
+        "logistics",
+        "yard",
+        "track",
+        "e-book",
+        "planning",
+        "transportation",
+        "trace",
+        "solution",
+        "extended",
+        "deployment",
+        "summary",
+        "supply",
+        "dock",
+        "provide",
+        "personal",
+        "copy",
+        "systems",
+        "orders",
+        "inspection",
+        "appointment",
+        "plant",
+        "maintenance",
+        "requirements"
+      ],
+      "tcodes": [],
+      "tables": [
+        "ISBN",
+        "EPUB",
+        "PRESS"
+      ]
+    },
+    {
+      "slug": "pp-ds-with-sap-s4hana",
+      "title": "PP-DS with SAP S4HANA",
+      "file": "PP-DS with SAP S4HANA __ Copy kysj-d27q-n3bt-whvm.pdf",
+      "module": "PP",
+      "agents": [
+        "pp",
+        "architect"
+      ],
+      "pageCount": 639,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Preface"
+        },
+        {
+          "n": 9,
+          "title": "Contents 4 Data Transfer for Transaction Data 175 4"
+        },
+        {
+          "n": 11,
+          "title": "Contents 6"
+        }
+      ],
+      "terms": [
+        "planning",
+        "production",
+        "scheduling",
+        "e-book",
+        "data",
+        "detailed",
+        "settings",
+        "edition",
+        "integration",
+        "optimizer",
+        "monitor",
+        "sap-press",
+        "advanced",
+        "summary",
+        "master",
+        "heuristics",
+        "hardcover",
+        "contents",
+        "profile",
+        "orders",
+        "alert",
+        "rheinwerk",
+        "publishing",
+        "requirements",
+        "board",
+        "copy",
+        "transfer",
+        "transaction",
+        "heuristic",
+        "profiles",
+        "please",
+        "materials",
+        "configuration",
+        "mahesh",
+        "planned",
+        "escape",
+        "time",
+        "isbn",
+        "create",
+        "lots"
+      ],
+      "tcodes": [
+        "TS17"
+      ],
+      "tables": [
+        "PRESS",
+        "LCCN",
+        "ISBN",
+        "LCSH",
+        "HANA",
+        "DDMRP"
+      ]
+    },
+    {
+      "slug": "plant-maintenance-with-sap-s4hana-business-user-guide",
+      "title": "Plant Maintenance with SAP S4HANA Business User Guide",
+      "file": "Plant Maintenance with SAP S4HANA Business User Guide __ Copy 2n6k-erjm-sqvt-hpay.pdf",
+      "module": "PM",
+      "agents": [
+        "pm",
+        "architect"
+      ],
+      "pageCount": 669,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Foreword"
+        },
+        {
+          "n": 9,
+          "title": "Contents 3"
+        },
+        {
+          "n": 11,
+          "title": "Contents 5"
+        }
+      ],
+      "terms": [
+        "maintenance",
+        "question",
+        "e-book",
+        "plant",
+        "order",
+        "should",
+        "which",
+        "functional",
+        "user",
+        "locations",
+        "business",
+        "technical",
+        "notification",
+        "system",
+        "equipment",
+        "sap-press",
+        "completion",
+        "karl",
+        "liebst",
+        "ckel",
+        "publishing",
+        "hardcover",
+        "creating",
+        "book",
+        "plan",
+        "preventive",
+        "systems",
+        "work",
+        "shift",
+        "notes",
+        "rheinwerk",
+        "information",
+        "data",
+        "print",
+        "copy",
+        "isbn",
+        "contents",
+        "summary",
+        "object",
+        "list"
+      ],
+      "tcodes": [
+        "TS192"
+      ],
+      "tables": [
+        "PRESS",
+        "LCCN",
+        "ISBN",
+        "LCSH",
+        "HANA"
+      ]
+    },
+    {
+      "slug": "production-planning-with-sap-s4hana",
+      "title": "Production Planning with SAP S4HANA",
+      "file": "Production Planning with SAP S4HANA __ Copy f3hm-kx92-ct8v-7p4y.pdf",
+      "module": "PP",
+      "agents": [
+        "pp",
+        "architect"
+      ],
+      "pageCount": 1087,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Acknowledgments"
+        },
+        {
+          "n": 9,
+          "title": "Contents 3"
+        },
+        {
+          "n": 11,
+          "title": "Contents Part III Production Planning Workflows 6 Production Planning for Dis"
+        }
+      ],
+      "terms": [
+        "production",
+        "process",
+        "planning",
+        "e-book",
+        "confirmation",
+        "materials",
+        "manufacturing",
+        "bill",
+        "control",
+        "order",
+        "types",
+        "material",
+        "scheduling",
+        "master",
+        "sap-press",
+        "configuration",
+        "contents",
+        "summary",
+        "profile",
+        "orders",
+        "instruction",
+        "edition",
+        "copy",
+        "overview",
+        "work",
+        "center",
+        "parameters",
+        "data",
+        "creating",
+        "repetitive",
+        "goods",
+        "rheinwerk",
+        "management",
+        "hardcover",
+        "print",
+        "cost",
+        "define",
+        "points",
+        "automatic",
+        "planned"
+      ],
+      "tcodes": [],
+      "tables": [
+        "PRESS",
+        "ISBN"
+      ]
+    },
+    {
+      "slug": "quality-management-with-sap-s4hana",
+      "title": "Quality Management with SAP S4HANA",
+      "file": "Quality Management with SAP S4HANA __ Copy bw76-fnz5-dphy-kgxt.pdf",
+      "module": "QM",
+      "agents": [
+        "qm",
+        "architect"
+      ],
+      "pageCount": 939,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Acknowledgments"
+        },
+        {
+          "n": 9,
+          "title": "Contents 3"
+        },
+        {
+          "n": 11,
+          "title": "Contents 6 Integrating with SAP S/4HANA Sales 309 6"
+        }
+      ],
+      "terms": [
+        "inspection",
+        "quality",
+        "master",
+        "management",
+        "e-book",
+        "business",
+        "type",
+        "configuration",
+        "equipment",
+        "data",
+        "processes",
+        "test",
+        "order",
+        "production",
+        "planning",
+        "material",
+        "basics",
+        "summary",
+        "sap-press",
+        "edition",
+        "plant",
+        "maintenance",
+        "contents",
+        "characteristics",
+        "settings",
+        "hardcover",
+        "control",
+        "number",
+        "copy",
+        "process",
+        "integrating",
+        "checklist",
+        "subcontracting",
+        "jawad",
+        "akhtar",
+        "warehouse",
+        "usage",
+        "sales",
+        "record",
+        "delivery"
+      ],
+      "tcodes": [],
+      "tables": [
+        "PRESS",
+        "ISBN",
+        "PART"
+      ]
+    },
+    {
+      "slug": "sap-fiori-apps-for-sap-s4hana-the-quick-reference-guide",
+      "title": "SAP Fiori Apps for SAP S4HANA The Quick Reference Guide",
+      "file": "SAP Fiori Apps for SAP S4HANA The Quick Reference Guide  __ Copy y2h3-b9ug-zf7r-54nk.pdf",
+      "module": "Fiori",
+      "agents": [
+        "architect",
+        "abap-s4"
+      ],
+      "pageCount": 685,
+      "chapters": [
+        {
+          "n": 5,
+          "title": "Contents Preface"
+        },
+        {
+          "n": 7,
+          "title": "Preface If you"
+        },
+        {
+          "n": 9,
+          "title": "Preface This book contains the following chapters"
+        },
+        {
+          "n": 11,
+          "title": "Preface SAP Fiori App IDs An SAP Fiori app ID can be found in the About inf"
+        },
+        {
+          "n": 13,
+          "title": "Preface This project came about after a lengthy discussion with Emily Nicholls,"
+        },
+        {
+          "n": 15,
+          "title": "Introduction If you"
+        }
+      ],
+      "terms": [
+        "fiori",
+        "apps",
+        "book",
+        "management",
+        "e-book",
+        "business",
+        "planning",
+        "quality",
+        "these",
+        "been",
+        "their",
+        "process",
+        "system",
+        "preface",
+        "copy",
+        "work",
+        "include",
+        "writing",
+        "explains",
+        "support",
+        "thank",
+        "rheinwerk",
+        "production",
+        "sales",
+        "which",
+        "would",
+        "they",
+        "publishing",
+        "user",
+        "financial",
+        "maintenance",
+        "personal",
+        "functionality",
+        "sap-press",
+        "transaction",
+        "codes",
+        "transactions",
+        "controlling",
+        "accounting",
+        "many"
+      ],
+      "tcodes": [
+        "UI5"
+      ],
+      "tables": [
+        "PRESS",
+        "ISBN",
+        "FMEA",
+        "ABAP"
+      ]
+    },
+    {
+      "slug": "sales-and-operations-planning-with-sap-ibp",
+      "title": "Sales and Operations Planning with SAP IBP",
+      "file": "Sales and Operations Planning with SAP IBP __ Copy 8u9n-5qxc-frpv-bwy3.pdf",
+      "module": "IBP",
+      "agents": [
+        "pp",
+        "architect"
+      ],
+      "pageCount": 923,
+      "chapters": [
+        {
+          "n": 2,
+          "title": "Sagar Deolalikar, Raghav Jandhyala, Pramod Mane, Amit Sinha Sales and Operations"
+        },
+        {
+          "n": 3,
+          "title": "Imprint This e-book is a publication many contributed to, specifically"
+        },
+        {
+          "n": 4,
+          "title": "Dear Reader, For those of us who don"
+        },
+        {
+          "n": 5,
+          "title": "Notes on Usage This e-book is protected by copyright"
+        },
+        {
+          "n": 6,
+          "title": "Notes on the Screen Presentation You are reading this e-book in a file format"
+        },
+        {
+          "n": 7,
+          "title": "Table of Contents Dear Reader Notes on Usage Table of Contents Foreword from Fra"
+        },
+        {
+          "n": 15,
+          "title": "Foreword from Franz Hero The pace of global supply chains has increased tremendo"
+        },
+        {
+          "n": 17,
+          "title": "Foreword from Adam Mussomeli Industries throughout the world today are moving at"
+        },
+        {
+          "n": 19,
+          "title": "Preface We are grateful to our readers for an excellent response to the first ed"
+        },
+        {
+          "n": 21,
+          "title": "We recommend starting with the introductory chapter for the basics of the S&OP pr"
+        }
+      ],
+      "terms": [
+        "planning",
+        "supply",
+        "process",
+        "sales",
+        "operations",
+        "book",
+        "business",
+        "data",
+        "chain",
+        "processes",
+        "demand",
+        "management",
+        "integration",
+        "integrated",
+        "summary",
+        "analytics",
+        "e-book",
+        "collaboration",
+        "review",
+        "performance",
+        "knowledge",
+        "financial",
+        "through",
+        "advanced",
+        "configuration",
+        "creating",
+        "system",
+        "indicators",
+        "solution",
+        "copy",
+        "time",
+        "between",
+        "detailed",
+        "figures",
+        "applications",
+        "plan",
+        "heuristic",
+        "cloud",
+        "production",
+        "these"
+      ],
+      "tcodes": [],
+      "tables": [
+        "ISBN",
+        "PRESS",
+        "EPUB"
+      ]
+    },
+    {
+      "slug": "sourcing-and-procurement-with-sap-s4hana",
+      "title": "Sourcing and Procurement with SAP S4HANA",
+      "file": "Sourcing and Procurement with SAP S4HANA __ Copy gz38-kvty-7wej-2i9b.pdf",
+      "module": "MM",
+      "agents": [
+        "mm",
+        "architect"
+      ],
+      "pageCount": 709,
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Contents Foreword"
+        },
+        {
+          "n": 9,
+          "title": "Contents 4"
+        },
+        {
+          "n": 11,
+          "title": "Contents 7 Inventory Management 237 7"
+        }
+      ],
+      "terms": [
+        "procurement",
+        "e-book",
+        "inventory",
+        "management",
+        "purchase",
+        "contract",
+        "sourcing",
+        "material",
+        "stock",
+        "summary",
+        "master",
+        "planning",
+        "sap-press",
+        "purchasing",
+        "contents",
+        "configuring",
+        "collaboration",
+        "goods",
+        "physical",
+        "information",
+        "edition",
+        "copy",
+        "business",
+        "order",
+        "apps",
+        "field",
+        "ariba",
+        "hardcover",
+        "implementation",
+        "operational",
+        "cloud",
+        "versus",
+        "options",
+        "integration",
+        "what",
+        "processing",
+        "direct",
+        "scheduling",
+        "agreement",
+        "orders"
+      ],
+      "tcodes": [],
+      "tables": [
+        "PRESS",
+        "ISBN",
+        "SERV",
+        "HTML"
+      ]
+    }
+  ]
+}
