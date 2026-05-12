@@ -30,22 +30,22 @@ const ICON_MAP: Record<string, LucideIcon> = {
 const ACCENT_TEXT: Record<string, string> = {
   amber: "text-amber-300",
   sky: "text-sky-300",
-  violet: "text-violet-300",
+  violet: "text-primary",
   emerald: "text-emerald-300",
   rose: "text-rose-300",
   cyan: "text-cyan-300",
-  indigo: "text-indigo-300",
+  indigo: "text-primary",
   orange: "text-orange-300",
 };
 
 const ACCENT_GLOW: Record<string, string> = {
   amber: "rgba(251,191,36,0.35)",
   sky: "rgba(56,189,248,0.35)",
-  violet: "rgba(167,139,250,0.35)",
+  violet: "rgba(0,112,242,0.30)",
   emerald: "rgba(52,211,153,0.35)",
   rose: "rgba(251,113,133,0.35)",
   cyan: "rgba(34,211,238,0.35)",
-  indigo: "rgba(129,140,248,0.35)",
+  indigo: "rgba(0,112,242,0.25)",
   orange: "rgba(251,146,60,0.35)",
 };
 

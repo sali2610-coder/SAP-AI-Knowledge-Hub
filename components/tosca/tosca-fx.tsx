@@ -30,8 +30,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 const ACCENT_BG: Record<string, string> = {
-  violet: "from-violet-500/15 to-violet-400/5",
-  indigo: "from-indigo-500/15 to-indigo-400/5",
+  violet: "from-primary/15 to-primary/5",
+  indigo: "from-primary/10 to-primary/3",
   amber: "from-amber-500/20 to-amber-400/5",
   emerald: "from-emerald-500/15 to-emerald-400/5",
   sky: "from-sky-500/15 to-sky-400/5",
@@ -40,8 +40,8 @@ const ACCENT_BG: Record<string, string> = {
 };
 
 const ACCENT_TEXT: Record<string, string> = {
-  violet: "text-violet-500 dark:text-violet-300",
-  indigo: "text-indigo-500 dark:text-indigo-300",
+  violet: "text-primary",
+  indigo: "text-primary",
   amber: "text-amber-600 dark:text-amber-300",
   emerald: "text-emerald-600 dark:text-emerald-300",
   sky: "text-sky-500 dark:text-sky-300",
@@ -50,8 +50,8 @@ const ACCENT_TEXT: Record<string, string> = {
 };
 
 const ACCENT_RING: Record<string, string> = {
-  violet: "ring-violet-400/40",
-  indigo: "ring-indigo-400/40",
+  violet: "ring-primary/40",
+  indigo: "ring-primary/30",
   amber: "ring-amber-400/40",
   emerald: "ring-emerald-400/40",
   sky: "ring-sky-400/40",
@@ -101,7 +101,7 @@ export function ToscaFxBuilder() {
     <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
       <header className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/10 px-2.5 py-1 text-[11px] uppercase tracking-wider text-violet-500 dark:text-violet-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] uppercase tracking-wider text-primary">
             <TestTube2 className="h-3.5 w-3.5" />
             {t.badge}
           </span>

@@ -24,7 +24,7 @@ export function Citations({
           className="inline-flex max-w-[260px] items-center gap-1 rounded-full border border-foreground/10 bg-foreground/5 px-2 py-0.5 text-[11px] text-foreground/85"
           title={c.bookTitle}
         >
-          <BookText className="h-3 w-3 shrink-0 text-indigo-300" />
+          <BookText className="h-3 w-3 shrink-0 text-primary" />
           <span className="truncate">{c.bookTitle}</span>
           {c.chapter && <span className="text-muted-foreground">- {c.chapter}</span>}
         </span>

@@ -50,7 +50,7 @@ export function MessageList({
     const t = EMPTY[language];
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-12 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600/40 to-amber-300/30">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/40 to-accent/30">
           <Sparkles className="h-7 w-7 text-foreground" />
         </div>
         <div className="space-y-2">

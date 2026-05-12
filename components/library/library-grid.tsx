@@ -38,10 +38,10 @@ const MODULE_ACCENT: Record<string, string> = {
   PP: "bg-amber-500/12 text-amber-600 dark:text-amber-300 ring-amber-400/30",
   PM: "bg-rose-500/12 text-rose-600 dark:text-rose-300 ring-rose-400/30",
   QM: "bg-cyan-500/12 text-cyan-600 dark:text-cyan-300 ring-cyan-400/30",
-  WM: "bg-indigo-500/12 text-indigo-600 dark:text-indigo-300 ring-indigo-400/30",
+  WM: "bg-sky-500/12 text-sky-600 dark:text-sky-300 ring-sky-400/30",
   MM: "bg-orange-500/12 text-orange-600 dark:text-orange-300 ring-orange-400/30",
   IBP: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-300 ring-emerald-400/30",
-  Fiori: "bg-violet-500/12 text-violet-600 dark:text-violet-300 ring-violet-400/30",
+  Fiori: "bg-primary/12 text-primary ring-primary/30",
   Foundation: "bg-primary/12 text-primary ring-primary/30",
   General: "bg-foreground/8 text-foreground/80 ring-foreground/15",
 };

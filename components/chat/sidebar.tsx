@@ -52,7 +52,7 @@ export function Sidebar({ onSelect }: { onSelect?: () => void }) {
     <aside className="flex h-full w-full flex-col border-e border-foreground/5 bg-background/80 backdrop-blur sm:w-[280px]">
       <div className="flex items-center justify-between gap-2 px-4 py-4">
         <Link href="/" className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-          <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-violet-400 to-amber-300" />
+          <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-primary to-accent" />
           <span className="truncate">{t.title}</span>
         </Link>
         <BackendBadge compact />

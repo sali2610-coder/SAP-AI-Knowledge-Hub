@@ -27,7 +27,7 @@ export function MessageBubble({
       className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}
     >
       {!isUser && (
-        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-gradient-to-br from-violet-600/50 to-fuchsia-500/40 text-white">
+        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-gradient-to-br from-primary/50 to-accent/40 text-white">
           <Sparkles className="h-4 w-4" />
         </div>
       )}
