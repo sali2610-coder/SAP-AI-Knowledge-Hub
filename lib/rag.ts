@@ -90,5 +90,7 @@ export function formatCitation(h: Hit) {
     bookTitle: h.doc.bookTitle,
     chapter: `p. ${h.doc.page} - chunk ${h.doc.chunkIndex + 1}`,
     page: h.doc.page,
+    paragraphId: h.doc.id,
+    chunkIndex: h.doc.chunkIndex,
   };
 }

@@ -52,6 +52,7 @@ export interface GuideHighlight {
   page: number;
   chunkIndex: number;
   snippet: string;
+  chapter?: string;
 }
 
 export interface BookGuide {
@@ -60,7 +61,9 @@ export interface BookGuide {
   module: string;
   pageCount: number;
   chunks: number;
+  agents: string[];
   tcodes: string[];
+  tables: string[];
   topics: string[];
   highlights: GuideHighlight[];
 }
@@ -70,6 +73,31 @@ const SAP_NOISE = new Set([
   "reserved", "trademark", "isbn", "version", "release", "tdz", "all", "rights",
   "company", "https", "http", "www", "com", "html", "page", "pages",
 ]);
+
+const TABLE_NOISE = new Set([
+  "ISBN", "PRESS", "EPUB", "HANA", "ABAP", "EBOOK", "EMAIL", "CALL",
+  "TEST", "SPRO", "REACH", "PART", "ASAP", "RFID", "BAPI", "FMEA",
+  "DDMRP", "MSSQL", "MSTQH", "KUAN", "CHUNG", "COGS", "COGM", "COMAC",
+  "OBYC", "SICF", "FPRH", "APICS", "SCOR", "HTML", "HTML5", "BYOL",
+  "JAVA", "COVID", "SERV", "LCCN", "LCSH", "LIMS", "NPDI", "POSC", "LOSC",
+  "IDOC",
+]);
+
+function clean<T extends string>(arr: T[], noise: Set<T>): T[] {
+  return arr.filter((x) => !noise.has(x));
+}
+
+function chapterFor(
+  page: number,
+  chapters: { n: number; title: string }[],
+): string | undefined {
+  let best: { n: number; title: string } | undefined;
+  for (const c of chapters) {
+    if (c.n <= page && (!best || c.n > best.n)) best = c;
+  }
+  if (!best) return undefined;
+  return best.title.length > 60 ? best.title.slice(0, 59) + "…" : best.title;
+}
 
 function topTopicsFromChunks(chunks: SearchDocLite[], n = 6): string[] {
   const counts = new Map<string, number>();
@@ -112,6 +140,7 @@ export function getBookGuides(): BookGuide[] {
         page: d.page,
         chunkIndex: d.chunkIndex,
         snippet: cleanSnippet(d.text),
+        chapter: chapterFor(d.page, book.chapters),
       }));
 
     return {
@@ -120,7 +149,9 @@ export function getBookGuides(): BookGuide[] {
       module: book.module,
       pageCount: book.pageCount,
       chunks: docs.length,
-      tcodes: book.tcodes.slice(0, 5),
+      agents: book.agents,
+      tcodes: book.tcodes.slice(0, 6),
+      tables: clean(book.tables, TABLE_NOISE).slice(0, 6),
       topics,
       highlights,
     };

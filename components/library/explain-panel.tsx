@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Sparkles, Quote, BookText, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  BookText,
+  MessageSquare,
+  Quote,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMarkdown } from "@/components/chat/markdown";
 import { useHubStore } from "@/lib/store";
@@ -14,26 +20,30 @@ import type { AgentId, Citation } from "@/lib/types";
 
 const COPY = {
   he: {
-    title: "הסבר חכם",
+    title: "הסבר של יועץ בכיר",
     close: "סגור",
-    source: "מתוך הקטע שנבחר",
+    source: "הקטע שבחרת",
     agent: "סוכן מומחה",
-    fromBook: "מקור בספר",
-    fromAgent: "ידע סוכן",
+    fromBook: "מתוך הספר",
+    fromAgent: "יועץ בכיר",
     askInChat: "המשך בצ׳אט",
-    sources: "מקורות",
-    loading: "מנסח הסבר...",
+    sources: "מקורות מצולבים",
+    loading: "היועץ מנסח תשובה...",
+    seniorTag: "יועץ SAP",
+    page: "עמוד",
   },
   en: {
-    title: "Smart explanation",
+    title: "Senior consultant briefing",
     close: "Close",
     source: "Selected passage",
     agent: "Specialist agent",
-    fromBook: "Book source",
-    fromAgent: "Agent knowledge",
+    fromBook: "From the book",
+    fromAgent: "Senior consultant",
     askInChat: "Continue in chat",
-    sources: "Sources",
-    loading: "Drafting explanation...",
+    sources: "Cross-references",
+    loading: "Consultant drafting answer...",
+    seniorTag: "SAP consultant",
+    page: "page",
   },
 } as const;
 
@@ -60,6 +70,16 @@ export function ExplainPanel({ bookSlug, agentId, paragraph, onClose }: Props) {
   const [citations, setCitations] = useState<Citation[]>([]);
   const [source, setSource] = useState<"book" | "agent">("book");
   const abortRef = useRef<AbortController | null>(null);
+
+  // Close panel on Escape.
+  useEffect(() => {
+    if (!paragraph) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paragraph, onClose]);
 
   useEffect(() => {
     if (!paragraph) return;
@@ -103,7 +123,8 @@ export function ExplainPanel({ bookSlug, agentId, paragraph, onClose }: Props) {
             const trimmed = evt.trim();
             if (!trimmed) continue;
             const eventLine =
-              trimmed.split("\n").find((l) => l.startsWith("event:")) ?? "event: delta";
+              trimmed.split("\n").find((l) => l.startsWith("event:")) ??
+              "event: delta";
             const dataLine =
               trimmed.split("\n").find((l) => l.startsWith("data:")) ?? "data: {}";
             const ev = eventLine.slice(6).trim();
@@ -112,7 +133,7 @@ export function ExplainPanel({ bookSlug, agentId, paragraph, onClose }: Props) {
             try {
               data = JSON.parse(dataJson);
             } catch {
-              // ignore
+              // ignore malformed event payload
             }
             if (ev === "delta") {
               const c = (data as { content?: string }).content ?? "";
@@ -171,54 +192,69 @@ export function ExplainPanel({ bookSlug, agentId, paragraph, onClose }: Props) {
             exit={{ x: language === "he" ? "-100%" : "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className={cn(
-              "fixed inset-y-0 z-50 flex w-full max-w-xl flex-col border-foreground/10 bg-background/95 elev-3 backdrop-blur",
-              language === "he" ? "start-0 border-e" : "end-0 border-s",
+              "glass-panel elev-3 fixed inset-y-0 z-50 flex w-full max-w-xl flex-col overflow-hidden",
+              language === "he"
+                ? "start-0 border-e border-foreground/10"
+                : "end-0 border-s border-foreground/10",
             )}
+            role="dialog"
+            aria-label={t.title}
           >
-            <header className="flex items-start justify-between gap-3 border-b border-foreground/8 px-6 py-4">
-              <div>
-                <div className="flex items-center gap-2 text-primary">
-                  <Sparkles className="h-4 w-4" />
-                  <span className="text-[11px] font-medium uppercase tracking-wider">
-                    {t.title}
-                  </span>
+            <div
+              aria-hidden
+              className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-amber-400"
+            />
+            <header className="flex items-start justify-between gap-3 border-b border-foreground/8 px-6 py-5">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-primary ring-1 ring-primary/25">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {t.seniorTag}
                 </div>
-                <h3 className="mt-1 text-base font-semibold">{agentCopy.name}</h3>
-                <p className="text-xs text-muted-foreground">{agentCopy.tagline}</p>
+                <h3 className="mt-2 flex items-center gap-2 text-lg font-semibold leading-tight tracking-tight">
+                  <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+                  {agentCopy.name}
+                </h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {agentCopy.tagline}
+                </p>
               </div>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={onClose}
                 aria-label={t.close}
+                className="rounded-full bg-foreground/5 p-2 transition hover:bg-foreground/10"
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <section className="rounded-xl border border-foreground/10 bg-card/60 p-3">
-                <div className="mb-1 flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ring-1 ring-inset ring-primary/10">
+                <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase tracking-wider text-primary/80">
                   <Quote className="h-3.5 w-3.5" />
-                  {t.source} - {paragraph.chapterTitle}
+                  {t.source}
+                  {paragraph.chapterTitle && (
+                    <span className="text-muted-foreground">
+                      · {paragraph.chapterTitle}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm leading-relaxed text-foreground/90">
+                <p className="text-[13px] leading-relaxed text-foreground/90">
                   {paragraph.text}
                 </p>
               </section>
 
-              <section className="mt-5">
-                <div className="mb-2 flex items-center justify-between">
+              <section className="mt-6">
+                <div className="mb-3 flex items-center justify-between">
                   <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
                     {t.agent}
                   </span>
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]",
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ring-1",
                       source === "book"
-                        ? "border-primary/30 bg-primary/10 text-primary"
-                        : "border-amber-400/30 bg-amber-500/10 text-amber-300",
+                        ? "bg-primary/12 text-primary ring-primary/25"
+                        : "bg-amber-500/12 text-amber-600 dark:text-amber-300 ring-amber-400/30",
                     )}
                   >
                     <BookText className="h-3 w-3" />
@@ -227,40 +263,68 @@ export function ExplainPanel({ bookSlug, agentId, paragraph, onClose }: Props) {
                 </div>
 
                 {streaming && content.length === 0 ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-2/3" />
-                    <Skeleton className="h-3 w-5/6" />
-                    <Skeleton className="h-3 w-4/6" />
-                    <Skeleton className="h-3 w-3/6" />
-                    <p className="mt-3 text-xs text-muted-foreground">{t.loading}</p>
+                  <div className="space-y-2.5">
+                    <Skeleton className="h-3 w-2/3 skeleton" />
+                    <Skeleton className="h-3 w-5/6 skeleton" />
+                    <Skeleton className="h-3 w-4/6 skeleton" />
+                    <Skeleton className="h-3 w-3/6 skeleton" />
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {t.loading}
+                    </p>
                   </div>
                 ) : (
-                  <ChatMarkdown text={content} />
+                  <div
+                    className={cn(
+                      "prose prose-sm max-w-none dark:prose-invert",
+                      "[&_code]:rounded [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:text-primary [&_code]:font-mono [&_code]:text-[0.85em]",
+                      "[&_blockquote]:border-s-2 [&_blockquote]:border-primary/40 [&_blockquote]:ps-3 [&_blockquote]:text-foreground/80 [&_blockquote]:not-italic",
+                      "[&_h1]:text-base [&_h2]:text-sm [&_h2]:mt-4 [&_h3]:text-sm",
+                      "[&_strong]:text-foreground [&_strong]:font-semibold",
+                    )}
+                  >
+                    <ChatMarkdown text={content} />
+                  </div>
                 )}
 
                 {citations.length > 0 && !streaming && (
-                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <div className="mt-6">
+                    <p className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
                       {t.sources}
-                    </span>
-                    {citations.map((c, i) => (
-                      <span
-                        key={`${c.bookSlug}-${i}`}
-                        className="inline-flex max-w-[280px] items-center gap-1 rounded-full border border-foreground/10 bg-foreground/5 px-2 py-0.5 text-[11px]"
-                      >
-                        <BookText className="h-3 w-3 shrink-0 text-primary" />
-                        <span className="truncate">{c.bookTitle}</span>
-                        {c.chapter && (
-                          <span className="text-muted-foreground">- {c.chapter}</span>
-                        )}
-                      </span>
-                    ))}
+                    </p>
+                    <ul className="space-y-2">
+                      {citations.map((c, i) => {
+                        const params = new URLSearchParams();
+                        if (c.paragraphId) params.set("p", c.paragraphId);
+                        if (c.page) params.set("page", String(c.page));
+                        const qs = params.toString();
+                        const href = qs
+                          ? `/library/${c.bookSlug}?${qs}`
+                          : `/library/${c.bookSlug}`;
+                        return (
+                          <li
+                            key={`${c.bookSlug}-${i}`}
+                            className="border-s-2 border-primary/40 ps-3"
+                          >
+                            <Link
+                              href={href}
+                              className="block text-[13px] leading-snug text-foreground/85 transition hover:text-primary"
+                            >
+                              <span className="block font-medium">{c.bookTitle}</span>
+                              <span className="block text-[11px] text-muted-foreground">
+                                {c.chapter ?? ""}
+                                {c.page ? ` · ${t.page} ${c.page}` : ""}
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
               </section>
             </div>
 
-            <footer className="border-t border-foreground/8 px-6 py-3">
+            <footer className="border-t border-foreground/8 px-6 py-4">
               <Link
                 href="/chat"
                 onClick={handleContinueInChat}

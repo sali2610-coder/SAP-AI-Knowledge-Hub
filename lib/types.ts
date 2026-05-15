@@ -17,6 +17,8 @@ export interface Citation {
   bookTitle: string;
   chapter?: string;
   page?: number;
+  paragraphId?: string;
+  chunkIndex?: number;
 }
 
 export interface ChatMessage {

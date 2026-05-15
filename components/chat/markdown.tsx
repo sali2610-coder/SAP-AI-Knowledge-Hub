@@ -18,8 +18,21 @@ export function ChatMarkdown({ text }: { text: string }) {
             const value = String(children ?? "").replace(/\n$/, "");
 
             if (inline || !match) {
+              const raw = String(children ?? "").trim();
+              // SAP tcode (MD01N), table name (4-5 caps), or CDS view prefix
+              // (I_/A_/C_) gets the Mango accent treatment so it pops at a glance.
+              const isSapTerm =
+                /^[A-Z]{2,4}[0-9]{1,3}[A-Z]?$/.test(raw) ||
+                /^[A-Z]{4,5}$/.test(raw) ||
+                /^[A-Z]_[A-Z][A-Za-z0-9_]+$/.test(raw);
               return (
-                <code className="rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[0.85em]">
+                <code
+                  className={
+                    isSapTerm
+                      ? "rounded-md border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-1.5 py-0.5 font-mono text-[0.85em] font-semibold text-[var(--accent)]"
+                      : "rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[0.85em]"
+                  }
+                >
                   {children}
                 </code>
               );

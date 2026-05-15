@@ -66,12 +66,14 @@ MVP scaffold of **SAP AI Knowledge Hub** - a Hebrew-first multi-agent Copilot fo
 
 ```bash
 npm run dev          # next dev (Turbopack)
-npm run build        # production build, runs tsc + collect-pages
+npm run build        # next build (plain - no custom tsc / collect-pages step)
 npm run start        # serve the production build
-npm run lint         # eslint
+npm run lint         # eslint (eslint-config-next)
 npm run kb:index     # standard index: up to 300 pages per PDF, 150K chars
 npm run kb:full-index  # full-index: ALL pages per PDF, 600K chars - use after adding new books
 ```
+
+**No test runner is wired.** `npm test` will fail. Do not invent a test command - ask the user before adding Vitest / Jest / Playwright.
 
 ### full-index command
 
@@ -104,28 +106,30 @@ npm run kb:full-index  # full-index: ALL pages per PDF, 600K chars - use after a
 - `components/site/theme-toggle.tsx`, `theme-effect.tsx`, `theme-script.tsx` - dark/light/system theme. Pre-hydration script avoids FOUC by reading the `sap-ai-hub-store` localStorage key before paint.
 - `components/landing/` - `hero.tsx`, `background-beams.tsx`, `agent-grid.tsx`, `library-section.tsx`, `agent-card.tsx`.
 - `lib/agents.ts` - agent registry (id, accent, copy in he/en, sample prompts, system-prompt hint).
+- `lib/types.ts` - typed union for `AgentId` plus `Message` / `Conversation` shapes. Source of truth for every persisted store entry and every API payload.
 - `lib/store.ts` - Zustand store, persisted to `sap-ai-hub-store` localStorage key.
 - `lib/kb.ts` + `lib/kb-index.json` - book metadata consumed by UI and mock stream.
 - `scripts/index-kb.mjs` - PDF indexer (pdfjs-dist legacy build).
+- `AGENTS.md` - per-agent **senior-implementer** system prompts (universal contract A-E + 8 personas matching `lib/agents.ts`). Required reading for any agent dispatch.
 
 ## Env vars
 
 `.env.local` (copy from `.env.example`):
 
-- `SAP_AI_ENDPOINT` - external RAG URL. When set, `/api/chat` forwards JSON `{ messages, agent, language }` and pipes the response stream back unchanged.
-- `SAP_AI_API_KEY` - optional bearer token sent as `Authorization: Bearer ...`.
+- `SAP_AI_ENDPOINT` - external RAG URL. Shared by `/api/chat` (forwards `{ messages, agent, language }`) and `/api/explain` (forwards `{ book, chapter, paragraph, language }` to `${SAP_AI_ENDPOINT}/explain`). Both pipe the response stream back unchanged.
+- `SAP_AI_API_KEY` - optional bearer token sent as `Authorization: Bearer ...` on both endpoints.
 
 ## Knowledge base
 
 - Put SAP Press PDFs in `knowledge-base/`. Run `npm run kb:index` once after adding/removing books.
-- Indexer extracts ~80 pages per PDF, top terms, transaction codes and table names. Writes `knowledge-base/.index/<slug>.txt` (excerpts) + `knowledge-base/.index/index.json` + `lib/kb-index.json`.
+- Indexer extracts up to 300 pages per PDF (standard) or every page (`FULL_SCAN=1`), top terms, transaction codes and table names. Writes `knowledge-base/.index/<slug>.txt` (excerpts) + `knowledge-base/.index/<slug>.pages.json` + `knowledge-base/.index/index.json` + `lib/kb-index.json` + `lib/kb-search-index.json` (BM25).
 - PDFs and the `.index/` folder are git-ignored.
 - The landing **Library** section and the mock stream both pull from this index, so book metadata propagates without code changes.
 
 ## Working conventions
 
 - **Hebrew is the default UI language**, English is a single-click toggle stored in Zustand. The root `<html lang dir>` flips through `components/site/language-effect.tsx`.
-- **Punctuation rule: ASCII `-` only.** No em or en dashes anywhere in UI copy. Grep before merging: `rg "[—–]" app components` should return empty.
+- **Punctuation rule: ASCII `-` only.** No em or en dashes anywhere in UI copy, library docs or agent prompts. Grep before merging: `rg "[—–]" app components lib AGENTS.md CLAUDE.md README.md` should return empty.
 - **Dark / Light / System theme.** Default is dark. `data-theme` + `.dark` class on `<html>` are set both by `ThemeScript` (pre-hydration) and `ThemeEffect` (reactive). All visual surfaces use `foreground/N` opacity instead of `white/N` so they read correctly in light mode. Keep that pattern when adding new UI.
 - shadcn Button does **not** accept `asChild` here (base-ui flavor). For links that should look like buttons, apply `buttonVariants({...})` to the `<Link>` directly.
 - Trigger primitives (HoverCardTrigger, SheetTrigger, DialogTrigger, DropdownMenuTrigger) take a `render` prop, not children. Pattern: `render={(props) => <button {...props} ... />}`.
@@ -141,13 +145,23 @@ Add sections when these arrive:
 
 Persistent user memory lives at `/Users/salihalif/.claude/projects/-Users-salihalif-Desktop-My-Projects-SAP-AI-Knowledge-Hub/memory/`. Save user/feedback/project/reference memories there per the auto-memory rules - not inside this repo.
 
+**Project-specific memory exclusions:**
+- Never persist book passages, excerpts, or paragraph text into memory. The corpus (`lib/kb-search-index.json`) is the source of truth; copying passages into memory creates stale duplicates.
+- Never persist OData metadata snapshots. Re-run `sap-odata-explorer/` when the question depends on current shape.
+- Do not store agent system prompts in memory - they live in `AGENTS.md` and evolve there.
+
+## Local scratch dirs (do not commit)
+
+- `.sc4sap/` - SC4SAP plugin scratch (CBO inventory, profile state). Local-only, git-ignored. Never stage it.
+- `knowledge-base/` and `knowledge-base/.index/` - PDFs + indexer output, git-ignored.
+
 ---
 
 ## SAP Skills - Mental Model (Marius Kruger)
 
 > Source: https://www.linkedin.com/pulse/claude-code-sap-skills-mental-model-worth-testing-marius-kruger-izpmc/
 
-Claude Code הוא **עוזר בזמן פיתוח (design-time)** — לא רכיב ריצה.
+Claude Code הוא **עוזר בזמן פיתוח (design-time)** - לא רכיב ריצה.
 תפקידו: לייצר scaffolding, קונפיגורציה ו-bindings נכונים.
 SAP BTP (Cloud Foundry, Kyma, AI Core) מריץ את ה-artifacts בפועל.
 
@@ -181,19 +195,19 @@ SAP BTP (Cloud Foundry, Kyma, AI Core) מריץ את ה-artifacts בפועל.
 
 | סקיל | פקודת הפעלה | שימוש |
 |---|---|---|
-| `sap-fiori-tools` | `/use sap-fiori-tools` | פיתוח ו-deployment של Fiori, VS Code extensions |
-| `sapui5` | `/use sapui5` | UI5 framework + Fiori Elements templates |
-| `sapui5-cli` | `/use sapui5-cli` | UI5 Tooling - build, serve, deploy |
-| `sapui5-linter` | `/use sapui5-linter` | ניתוח סטטי וביקורת קוד SAPUI5 |
+| `sap-fiori-tools` | `Skill(sap-fiori-tools:sap-fiori-tools)` | פיתוח ו-deployment של Fiori, VS Code extensions |
+| `sapui5` | _(no standalone `sapui5` skill installed - use the CLI / linter / fiori-tools combo above)_ | UI5 framework + Fiori Elements templates |
+| `sapui5-cli` | `Skill(sapui5-cli:sapui5-cli)` | UI5 Tooling - build, serve, deploy |
+| `sapui5-linter` | `Skill(sapui5-linter:sapui5-linter)` | ניתוח סטטי וביקורת קוד SAPUI5 |
 
 ### SAP Cloud ALM (סקילים קרובים - אין ייעודי)
 
 | סקיל | פקודת הפעלה | שימוש |
 |---|---|---|
-| `sap-btp-cloud-transport-management` | `/use sap-btp-cloud-transport-management` | Transport landscape ו-deployment pipelines |
-| `sap-btp-cloud-logging` | `/use sap-btp-cloud-logging` | ניטור, logging, observability על BTP |
-| `sap-btp-cias` | `/use sap-btp-cias` | Cloud Integration Automation workflows |
-| `sap-btp-developer-guide` | `/use sap-btp-developer-guide` | הנחיות פיתוח עסקי כלליות על BTP |
+| `sap-btp-cloud-transport-management` | `Skill(sap-btp-cloud-transport-management:sap-btp-cloud-transport-management)` | Transport landscape ו-deployment pipelines |
+| `sap-btp-cloud-logging` | `Skill(sap-btp-cloud-logging:sap-btp-cloud-logging)` | ניטור, logging, observability על BTP |
+| `sap-btp-cias` | `Skill(sap-btp-cias:sap-btp-cias)` | Cloud Integration Automation workflows |
+| `sap-btp-developer-guide` | `Skill(sap-btp-developer-guide:sap-btp-developer-guide)` | הנחיות פיתוח עסקי כלליות על BTP |
 
 ### אסטרטגיית טעינה לפי משימה
 
@@ -232,11 +246,11 @@ SAP BTP (Cloud Foundry, Kyma, AI Core) מריץ את ה-artifacts בפועל.
 
 ---
 
-## Thinking Process — חובה לכל סוכן לפני כל תגובה
+## Thinking Process - חובה לכל סוכן לפני כל תגובה
 
 > מבוסס על עקרונות "How I Teach Claude Code to Work My Way" (SAP Community).
 > כל סוכן בפרויקט זה חייב לבצע את 5 השלבים הבאים **לפני** שהוא מנסח תשובה.
-> שלבים אלו אינם מוצגים למשתמש — הם מתבצעים פנימית.
+> שלבים אלו אינם מוצגים למשתמש - הם מתבצעים פנימית.
 
 ### שלב 1 - סיווג השאלה
 
@@ -300,6 +314,6 @@ THINK:
 THEN ANSWER:
 ```
 
-אם `Confidence = low` — חובה לציין זאת בפתח התשובה.
-אם `Verification needed = odata` — הרץ `sap-odata-explorer/` לפני התשובה.
-אם `SAP version = ECC` — אל תציג תשובות S/4HANA.
+אם `Confidence = low` - חובה לציין זאת בפתח התשובה.
+אם `Verification needed = odata` - הרץ `sap-odata-explorer/` לפני התשובה.
+אם `SAP version = ECC` - אל תציג תשובות S/4HANA.

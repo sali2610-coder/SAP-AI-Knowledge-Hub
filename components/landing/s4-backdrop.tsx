@@ -16,18 +16,18 @@ export function S4Backdrop() {
         style={{ backgroundImage: "url(/images/S4.png)" }}
       />
 
-      {/* Belize-blue tint at 40% opacity. */}
+      {/* Belize-blue tint - thinner so the S/4HANA artwork stays crisp. */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.1 }}
-        className="absolute inset-0 backdrop-blur-xl"
-        style={{ backgroundColor: "rgba(0, 112, 242, 0.40)" }}
+        className="absolute inset-0 backdrop-blur-[1.5px]"
+        style={{ backgroundColor: "rgba(0, 112, 242, 0.18)" }}
       />
 
       {/* Soft fade to background near top/bottom for legibility. */}
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background/80 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background/70 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-background/90 to-transparent" />
     </div>
   );
 }
