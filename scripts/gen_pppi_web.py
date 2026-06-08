@@ -8,7 +8,7 @@ Run:  python3 scripts/gen_pppi_web.py   ->  index_pppi.html
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pppi_data import TOPICS, OPS
+from pppi_data import TOPICS, OPS, PPVS
 
 topics, cockpit, joins = [], [], []
 for ti, t in enumerate(TOPICS):
@@ -26,7 +26,7 @@ for ti, t in enumerate(TOPICS):
     topics.append({"idx": ti, "title": t["title"], "theme": t["theme"], "tables": tabs,
                    "ops": {"tcodes": OPS[ti]["tcodes"], "interfaces": OPS[ti]["interfaces"], "programs": OPS[ti]["programs"]}})
 
-DATA = {"topics": topics, "cockpit": cockpit, "joins": joins,
+DATA = {"topics": topics, "cockpit": cockpit, "joins": joins, "ppvs": PPVS,
         "statuses": ["Not started", "In analysis", "In conversion", "Tested", "Done"]}
 
 HTML = r"""<!DOCTYPE html>
@@ -77,7 +77,7 @@ HTML = r"""<!DOCTYPE html>
    <header class="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow" style="background:#D62027">
      <button class="md:hidden text-2xl" onclick="document.getElementById('side').classList.toggle('translate-x-full')">☰</button>
      <h1 id="hdr" class="font-extrabold text-lg truncate">מסך ניווט מרכזי</h1>
-     <div class="text-xs bg-white/15 px-2 py-1 rounded font-bold hidden sm:block">58 טבלאות &middot; PP-PI &middot; JOIN ON</div>
+     <div class="text-xs bg-white/15 px-2 py-1 rounded font-bold hidden sm:block">65 טבלאות &middot; PP-PI &middot; JOIN ON</div>
    </header>
    <main id="main" class="p-3 md:p-6 max-w-full"></main>
    <footer class="text-center text-xs text-slate-400 py-6">SAP PP-PI Migration &middot; CBC Israel (Project NEO) &middot; .xlsx + Web</footer>
@@ -93,9 +93,8 @@ const esc=s=>(s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").r
 function fioriLink(s){const m=String(s).match(/F\d{3,5}/);return m?`<a class="sap" target="_blank" rel="noopener" href="https://fioriappslibrary.hana.ondemand.com/sap/fix/externalViewer/#/detail/Apps('${m[0]}')">${esc(s)}</a>`:esc(s);}
 function keyBadge(k){const c=k==="PK"?"pk":k==="FK"?"fk":k==="PK/FK"?"pkfk":"non";return `<span class="badge ${c}">${esc(k)}</span>`;}
 
-const NAV=[{id:"dash",icon:"🏠",label:"מסך ניווט מרכזי"},...DATA.topics.map(t=>({id:"t"+t.idx,icon:"📄",label:t.title})),
- {id:"cockpit",icon:"◆",label:"Cockpit מעקב מיגרציה"},{id:"er",icon:"⇄",label:"ER - Join Map"}];
-function renderNav(a){document.getElementById("nav").innerHTML=NAV.map(n=>`<button class="navbtn w-full text-right px-4 py-2 ${n.id===a?'active':''}" onclick="show('${n.id}')"><span class="opacity-70 ml-2">${n.icon}</span>${esc(n.label)}</button>`).join("");}
+const NAV=[{id:"dash",icon:"🏠",label:"מסך ניווט מרכזי"},{group:"זרמי ליבה (Core Streams)"},...DATA.topics.map(t=>({id:"t"+t.idx,icon:"📄",label:t.title})),{group:"לימוד וכלים (Education & Tools)"},{id:"edu",icon:"📚",label:"PP מול PP-PI"},{id:"cockpit",icon:"◆",label:"Cockpit מעקב מיגרציה"},{id:"er",icon:"⇄",label:"ER - Join Map"}];
+function renderNav(a){document.getElementById("nav").innerHTML=NAV.map(n=> n.group ? `<div class="px-4 pt-3 pb-1 text-[11px] font-bold text-white/40">${esc(n.group)}</div>` : `<button class="navbtn w-full text-right px-4 py-2 ${n.id===a?'active':''}" onclick="show('${n.id}')"><span class="opacity-70 ml-2">${n.icon}</span>${esc(n.label)}</button>`).join("");}
 
 function kpis(){let k={total:DATA.cockpit.length,"Done":0,"Tested":0,"In analysis":0,"In conversion":0,"Not started":0};
  DATA.cockpit.forEach(o=>k[getS(o.table)]++); k.prog=k["In analysis"]+k["In conversion"]; k.pct=k.total?Math.round(k.Done/k.total*100):0; return k;}
@@ -119,7 +118,7 @@ function viewDash(){
  const cards=[kpiCard("סה״כ אובייקטים",k.total,"#ECEFF1","#1E1E24"),kpiCard("הושלם",k.Done,"#DCEFE0","#1E5A44"),
    kpiCard("נבדק",k.Tested,"#DCE6EC","#2A4A57"),kpiCard("בתהליך",k.prog,"#E1E6EA","#37474F"),
    kpiCard("פתוח",k["Not started"],"#FCE4E6","#B01722"),kpiCard("% השלמה",k.pct+"%","#FBE3E4","#D62027")].join("");
- const tiles=NAV.filter(n=>n.id!=="dash").map(n=>`<button onclick="show('${n.id}')" class="text-right p-3 rounded-lg text-white font-bold shadow-sm hover:opacity-90" style="background:${n.id==='cockpit'||n.id==='er'?'#D62027':'#1E1E24'}"><span class="opacity-70 ml-1">${n.icon}</span>${esc(n.label)}</button>`).join("");
+ const tiles=NAV.filter(n=>n.id&&n.id!=="dash").map(n=>`<button onclick="show('${n.id}')" class="text-right p-3 rounded-lg text-white font-bold shadow-sm hover:opacity-90" style="background:${n.id==='cockpit'||n.id==='er'?'#D62027':'#1E1E24'}"><span class="opacity-70 ml-1">${n.icon}</span>${esc(n.label)}</button>`).join("");
  return `<div class="text-white px-4 py-3 rounded-lg font-extrabold text-lg mb-3" style="background:#D62027">סיכום התקדמות מיגרציה PP-PI (KPI - חי מה-Cockpit)</div>
    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">${cards}</div>
    <div id="chartBox" class="mb-5">${charts()}</div>
@@ -195,11 +194,19 @@ function viewER(){
    <div class="overflow-x-auto"><table class="resp"><thead><tr><th>#</th><th>טבלה</th><th>JOIN ON (SQL/CDS)</th><th>תיאור</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 
+function viewEdu(){
+ const rows=DATA.ppvs.map((x,i)=>`<tr><td data-label="#" class="text-center">${i+1}</td><td data-label="היבט"><b style="color:#1E1E24">${esc(x[0])}</b></td><td data-label="SAP PP">${esc(x[1])}</td><td data-label="SAP PP-PI" style="background:#DCEFE0"><b style="color:#1E5A44">${esc(x[2])}</b></td><td data-label="הערת CBC/S4" style="color:#9A5A23">${esc(x[3])}</td></tr>`).join("");
+ return `<div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#E5E7EB">
+   <div class="text-white px-3 py-2 font-bold" style="background:#D62027">📚 SAP PP (Discrete) מול SAP PP-PI (Process) - שכבת חינוך ארגונית</div>
+   <div class="p-3 text-sm text-slate-600">CBC מייצר משקאות = <b>ייצור תהליכי</b>, ולכן המודול הנכון הוא <b style="color:#D62027">PP-PI</b> (לא PP בדיד). הטבלה ממפה את ההבדלים המהותיים בין שני המודולים:</div>
+   <div class="overflow-x-auto"><table class="resp"><thead><tr><th>#</th><th>היבט (Aspect)</th><th>SAP PP (Discrete)</th><th>SAP PP-PI (Process - CBC)</th><th>הערת CBC / S/4HANA</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
 function show(id){renderNav(id);const m=document.getElementById("main"),h=document.getElementById("hdr");
  if(innerWidth<768)document.getElementById("side").classList.add("translate-x-full");
  if(id==="dash"){h.textContent="מסך ניווט מרכזי";m.innerHTML=viewDash();}
  else if(id==="cockpit"){h.textContent="Cockpit מעקב מיגרציה";m.innerHTML=viewCockpit();}
  else if(id==="er"){h.textContent="ER - Join Map";m.innerHTML=viewER();}
+ else if(id==="edu"){h.textContent="PP מול PP-PI";m.innerHTML=viewEdu();}
  else{const i=+id.slice(1);h.textContent=DATA.topics[i].title;m.innerHTML=viewTopic(i);}
  scrollTo(0,0);}
 function doSearch(q){q=q.trim().toLowerCase();if(!q)return;

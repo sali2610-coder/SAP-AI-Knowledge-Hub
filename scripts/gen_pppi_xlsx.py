@@ -18,7 +18,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.utils import get_column_letter
-from pppi_data import TOPICS, OPS
+from pppi_data import TOPICS, OPS, PPVS
 
 # ---- CBC brand palette ----
 FONT = "Segoe UI"; RED = "D62027"; REDHOT = "F40009"; SLATE = "1E1E24"; SLATE2 = "2B2B33"
@@ -214,6 +214,33 @@ for topic, sname, ops in zip(TOPICS, sheet_names, OPS):
     ws.print_options.gridLines = False; ws.print_title_rows = "1:2"
     ws.page_margins = PageMargins(left=0.3, right=0.3, top=0.7, bottom=0.6, header=0.3, footer=0.3)
 
+# ---- PP vs PP-PI education sheet ----
+PPVS_SHEET = "PP מול PP-PI"
+pv = wb.create_sheet(PPVS_SHEET); pv.sheet_view.rightToLeft = True; pv.sheet_properties.tabColor = SILVER
+back_btn(pv, 5, "SAP PP (Discrete) מול SAP PP-PI (Process) - שכבת חינוך ארגונית  ·  CBC NEO")
+pvc = [("מס' (#)", 5), ("היבט (Aspect)", 26), ("SAP PP - ייצור בדיד (Discrete)", 34),
+       ("SAP PP-PI - ייצור תהליכי (Process)", 36), ("הערת CBC / S/4HANA", 44)]
+for j, (lbl, w) in enumerate(pvc, start=1):
+    c = pv.cell(2, j, lbl); c.font = f(11, True, "FFFFFF")
+    c.fill = PatternFill("solid", fgColor=(RED if j == 4 else SLATE))
+    c.alignment = Alignment("center", "center", wrap_text=True); c.border = BORDER
+    pv.column_dimensions[get_column_letter(j)].width = w
+pv.row_dimensions[2].height = 30; pv.freeze_panes = "A3"
+rr = 3
+for i, (asp, pp, pi, note) in enumerate(PPVS, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    cells = [(i, "center", "6B7280", True, band), (asp, "right", SLATE, True, band),
+             (pp, "right", INK, False, band), (pi, "right", "1E5A44", True, "DCEFE0"),
+             (note, "right", "9A5A23", False, band)]
+    for j, (v, al, col, bold, fl) in enumerate(cells, start=1):
+        c = pv.cell(rr, j, v); c.font = f(10, bold, col); c.alignment = Alignment(al, "top", wrap_text=True); c.border = BORDER
+        if fl: c.fill = PatternFill("solid", fgColor=fl)
+    pv.row_dimensions[rr].height = 46
+    index_rows.append(("PP/PP-PI", asp, pp, pi, PPVS_SHEET, f"A{rr}")); rr += 1
+pv.oddHeader.center.text = '&"Segoe UI,Bold"&11&K1E1E24Project NEO  |  SAP PP vs PP-PI  -  Education Layer'
+pv.oddFooter.center.text = '&"Segoe UI"&8&K6B7280CBC NEO - PP vs PP-PI - Page &P of &N'
+pv.print_area = f"A1:E{rr-1}"; pv.page_setup.orientation = "landscape"; pv.print_options.gridLines = False
+
 # ---- Cockpit ----
 STAT = ["Not started", "In analysis", "In conversion", "Tested", "Done"]
 SF = {"Not started": "FCE4E6", "In analysis": "ECEFF1", "In conversion": "E1E6EA", "Tested": "DCE6EC", "Done": "DCEFE0"}
@@ -321,7 +348,7 @@ dash.row_dimensions[6].height = 30
 dash.merge_cells("B9:H9"); nh = dash.cell(9, 2, "ניווט מהיר לגיליונות"); nh.font = f(12, True, "FFFFFF")
 nh.fill = PatternFill("solid", fgColor=SLATE); nh.alignment = Alignment(horizontal="right")
 nav = [(t["title"], sn, TAB[t["theme"]]) for t, sn in zip(TOPICS, sheet_names)]
-nav += [("◆ " + COCKPIT, COCKPIT, RED), ("⇄ " + ER, ER, RED)]
+nav += [("📚 " + PPVS_SHEET, PPVS_SHEET, SILVER), ("◆ " + COCKPIT, COCKPIT, RED), ("⇄ " + ER, ER, RED)]
 cardc = [2, 4, 6, 8]; r = 10
 for i, (title, sn, hdr) in enumerate(nav):
     if i % 4 == 0 and i: r += 3
