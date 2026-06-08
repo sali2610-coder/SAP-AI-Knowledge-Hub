@@ -391,12 +391,7 @@ for st_name, fillc in STATUS_FILL.items():
                    fill=PatternFill("solid", fgColor=fillc),
                    font=Font(name=FONT_NAME, bold=True, color=STATUS_TXT[st_name])))
 
-# --- status summary table (cols K:L) + dynamic doughnut chart on the Cockpit ---
-from openpyxl.chart import DoughnutChart, BarChart, Reference
-from openpyxl.chart.series import DataPoint
-from openpyxl.chart.label import DataLabelList
-from openpyxl.drawing.fill import PatternFillProperties, ColorChoice
-
+# --- status summary table (cols K:L) - live COUNTIF (text/number cells only, no chart objects) ---
 cock.cell(2, 11, "סטטוס (Status)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
 cock.cell(2, 12, "כמות (Count)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
 for cc_ in (11, 12):
@@ -418,17 +413,6 @@ cock.cell(trow, 11).alignment = Alignment(horizontal="right")
 tt = cock.cell(trow, 12, f'=SUM($L$3:$L${trow-1})'); tt.font = Font(name=FONT_NAME, bold=True, size=11, color=INK)
 tt.alignment = Alignment(horizontal="center"); tt.border = BORDER
 cock.column_dimensions["K"].width = 16; cock.column_dimensions["L"].width = 12
-
-donut = DoughnutChart(); donut.title = "התפלגות סטטוס מיגרציה"; donut.holeSize = 55
-data = Reference(cock, min_col=12, min_row=2, max_row=trow - 1)      # L2:L7 (header+5)
-cats = Reference(cock, min_col=11, min_row=3, max_row=trow - 1)      # K3:K7
-donut.add_data(data, titles_from_data=True); donut.set_categories(cats)
-for k, stt in enumerate(STATUSES):                                   # colour slices per status
-    pt = DataPoint(idx=k); pt.graphicalProperties.solidFill = STATUS_FILL[stt]
-    donut.series[0].data_points.append(pt)
-donut.dataLabels = DataLabelList(); donut.dataLabels.showVal = True
-donut.height = 7.5; donut.width = 11
-cock.add_chart(donut, "K11")
 
 # === Custom Code Check =====================================================
 CCC_STATUS = ["To review", "In progress", "Adapted", "OK - no change", "Obsolete"]
@@ -547,14 +531,6 @@ for k, (lbl, formula_v, txt, fillc) in enumerate(kpis):
 dash.row_dimensions[6].height = 30
 dash.row_dimensions[7].height = 22
 
-# progress bar chart (anchored right, references the Cockpit summary - dynamic)
-bar = BarChart(); bar.type = "bar"; bar.title = "התקדמות לפי סטטוס"; bar.legend = None
-bdata = Reference(cock, min_col=12, min_row=2, max_row=2 + len(STATUSES))
-bcats = Reference(cock, min_col=11, min_row=3, max_row=2 + len(STATUSES))
-bar.add_data(bdata, titles_from_data=True); bar.set_categories(bcats)
-bar.height = 5.2; bar.width = 11
-dash.add_chart(bar, "J5")
-
 dash.merge_cells("B9:H9")
 nh = dash.cell(9, 2, "ניווט מהיר לגיליונות  (לחץ על כרטיס כדי לעבור)")
 nh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor=SLATE)
@@ -611,7 +587,7 @@ C = lambda k: get_column_letter(IDX_COL0 + k)         # P,Q,R,S,T,U,V
 rng = lambda k: f"${C(k)}$2:${C(k)}${N+1}"
 formula = (
  f'=IF({SEARCH_CELL}="","הקלד מונח בתא הצהוב למעלה - והתוצאות יופיעו כאן מיד (כולל קישור לחיץ)...",'
- f'IFERROR(FILTER(CHOOSE({{1,2,3,4,5,6}},{rng(6)},{rng(1)},{rng(2)},{rng(3)},{rng(4)},{rng(5)}),'
+ f'IFERROR(_xlfn._xlws.FILTER(CHOOSE({{1,2,3,4,5,6}},{rng(6)},{rng(1)},{rng(2)},{rng(3)},{rng(4)},{rng(5)}),'
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(1)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(2)})))+'
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(3)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(0)})))>0),'
  f'"לא נמצאו תוצאות - נסה מונח אחר"))'
