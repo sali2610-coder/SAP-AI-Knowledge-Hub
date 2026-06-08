@@ -40,7 +40,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.utils import get_column_letter
 
-from pm_data import COLS as COLS_BASE, S4_COL_START, TOPICS
+from pm_data import COLS as COLS_BASE, TOPICS
 from pm_ext_data import EXTENSIONS, SIMPLIFICATION
 
 DASH = "מסך ניווט מרכזי"
@@ -81,9 +81,66 @@ TH = {
 SEARCH_CELL = "C25"          # visible search box (must match the macro & VML anchor)
 IDX_COL0 = 16                # column P - first index column (hidden block on dashboard)
 
-# 15th column appended on the LEFT (RTL) = SUM/migration note
-COLS = COLS_BASE + [("שלב מיגרציה / הערות SUM Conversion", 30)]
-NCOL = len(COLS)             # 15
+# Insert a Key Type (PK/FK) column right after the Hebrew field column, and append the SUM column.
+# COLS_BASE order: 0 ID,1 tcodes,2 table,3 field,4 English,5 Hebrew,6 funcs,7 fdesc,8 progs,
+#                  9 pdesc,10 s4status,11 s4repl,12 s4tcode,13 fiori
+KEY_COL = ("סוג מפתח (Key Type)", 13)
+SUM_COL = ("שלב מיגרציה / הערות SUM Conversion", 30)
+COLS = COLS_BASE[:6] + [KEY_COL] + COLS_BASE[6:] + [SUM_COL]
+NCOL = len(COLS)             # 16
+S4_COL_START = 12            # columns 12..16 = S/4HANA + Fiori + SUM (silver/copper band)
+
+# --------------------------------------------------------------------------
+#  Primary-Key / Foreign-Key classification per table (for the Key Type column)
+# --------------------------------------------------------------------------
+PK = {
+ "IFLOT": {"TPLNR"}, "IFLOS": {"TPLNR"}, "ILOA": {"ILOAN"},
+ "CRHD": {"OBJID", "OBJTY"}, "CRTX": {"OBJID", "SPRAS"}, "T370T": {"SPRAS", "FLTYP"},
+ "EQUI": {"EQUNR"}, "EQKT": {"EQUNR", "SPRAS"}, "EQUZ": {"EQUNR", "DATBI", "EQLFN"},
+ "OBJK": {"OBKNR"},
+ "STKO": {"STLNR", "STLTY", "STLAL"}, "STPO": {"STLNR", "POSNR"},
+ "MAST": {"MATNR", "WERKS", "STLAN", "STLNR"}, "EQST": {"EQUNR", "STLAL"}, "TPST": {"TPLNR", "STLAL"},
+ "IMPTT": {"POINT"}, "IMRG": {"MDOCM"},
+ "QPCD": {"KATALOGART", "CODEGRUPPE", "CODE", "VERSION"}, "QPGR": {"KATALOGART", "CODEGRUPPE"},
+ "T352B": {"RBNR", "KATALOGART"}, "T352": {"RBNR"},
+ "QMEL": {"QMNUM"}, "QMFE": {"QMNUM", "FENUM"}, "QMUR": {"QMNUM", "FENUM", "URNUM"},
+ "QMMA": {"QMNUM", "MANUM"}, "QMSM": {"QMNUM", "MANUM"},
+ "AUFK": {"AUFNR"}, "AFKO": {"AUFNR"}, "AFVC": {"AUFPL", "APLZL"}, "AFPO": {"AUFNR", "POSNR"},
+ "AFIH": {"AUFNR"}, "AFWI": {"RUECK", "RMZHL"},
+ "JEST": {"OBJNR", "STAT"}, "JSTO": {"OBJNR"}, "TJ02T": {"ISTAT", "SPRAS"}, "TJ30T": {"STSMA", "ESTAT", "SPRAS"},
+ "RESB": {"RSNUM", "RSPOS"}, "EBAN": {"BANFN", "BNFPO"}, "EBKN": {"BANFN", "BNFPO"},
+ "MSEG": {"MBLNR", "ZEILE"}, "MKPF": {"MBLNR", "MJAHR"},
+ "COSP": {"OBJNR", "GJAHR", "WRTTP", "KSTAR"}, "COSS": {"OBJNR", "GJAHR", "WRTTP", "KSTAR"},
+ "COBRA": {"OBJNR"}, "COBRB": {"OBJNR", "BUREG"},
+ "PLKO": {"PLNTY", "PLNNR", "PLNAL"}, "PLPO": {"PLNTY", "PLNNR"},
+ "MPLA": {"WARPL"}, "MPOS": {"WAPOS"}, "MHIO": {"WARPL", "ABNUM"}, "MHIS": {"WARPL", "ABNUM"},
+ "ADMI_RUN": {"RUNID"},
+}
+FK = {
+ "IFLOT": {"TPLMA", "OBJNR"}, "IFLOS": {"TPLNR", "TPLKZ"}, "ILOA": {"KOSTL", "SWERK", "INGRP", "GEWRK", "TPLNR"},
+ "CRHD": {"WERKS"}, "CRTX": {"OBJID"}, "T370T": set(),
+ "EQUI": {"OBJNR"}, "EQKT": {"EQUNR"}, "EQUZ": {"EQUNR", "HEQUI", "ILOAN"}, "OBJK": {"EQUNR", "MATNR"},
+ "STKO": set(), "STPO": {"IDNRK"}, "MAST": {"MATNR", "STLNR"}, "EQST": {"EQUNR", "STLNR"}, "TPST": {"TPLNR", "STLNR"},
+ "IMPTT": {"MPOBJ", "ATINN"}, "IMRG": {"POINT"},
+ "QPCD": set(), "QPGR": set(), "T352B": {"CODEGRUPPE"}, "T352": set(),
+ "QMEL": {"EQUNR", "TPLNR", "OBJNR"}, "QMFE": {"QMNUM"}, "QMUR": {"QMNUM", "FENUM"},
+ "QMMA": {"QMNUM"}, "QMSM": {"QMNUM"},
+ "AUFK": {"OBJNR", "KOSTV"}, "AFKO": {"AUFNR", "AUFPL", "PLNBEZ"}, "AFVC": {"AUFPL", "ARBID"},
+ "AFPO": {"AUFNR", "MATNR"}, "AFIH": {"AUFNR", "EQUNR", "TPLNR", "GEWRK"}, "AFWI": {"RUECK", "MBLNR", "MATNR"},
+ "JEST": {"OBJNR"}, "JSTO": {"STSMA"}, "TJ02T": set(), "TJ30T": set(),
+ "RESB": {"MATNR", "AUFNR"}, "EBAN": {"MATNR"}, "EBKN": {"BANFN", "BNFPO", "AUFNR", "KOSTL", "SAKTO"},
+ "MSEG": {"MBLNR", "MATNR", "AUFNR"}, "MKPF": set(),
+ "COSP": {"OBJNR", "KSTAR"}, "COSS": {"OBJNR", "KSTAR", "PARGB"}, "COBRA": {"OBJNR"}, "COBRB": {"OBJNR", "EMPGE"},
+ "PLKO": set(), "PLPO": {"ARBID"}, "MPLA": {"STRAT"}, "MPOS": {"WARPL", "EQUNR", "TPLNR", "PLNNR"},
+ "MHIO": {"WARPL", "AUFNR"}, "MHIS": {"WARPL"}, "ADMI_RUN": set(),
+}
+def key_type(table, field):
+    pk = field in PK.get(table, set())
+    fk = field in FK.get(table, set())
+    if pk and fk: return "PK/FK"
+    if pk: return "PK"
+    if fk: return "FK"
+    return "-"
 
 def sum_note(tbl):
     """Derive a concrete SUM (Software Update Manager) conversion note from the S/4 mapping."""
@@ -154,11 +211,11 @@ def safe(name):
     for ch in ':\\/?*[]': name = name.replace(ch, "")
     return name[:31]
 
-# data-grid alignment: IDs centered, technical/English left, Hebrew right
-LEFTCOLS  = {2, 3, 4, 5, 7, 9, 14}
-RIGHTCOLS = {6, 8, 10, 11, 12, 13, 15}
+# data-grid alignment (16 cols): IDs/Key-Type centered, technical/English left, Hebrew right
+CENTERCOLS = {1, 7}
+LEFTCOLS   = {2, 3, 4, 5, 8, 10, 15}
 def col_h(col):
-    return "center" if col == 1 else ("left" if col in LEFTCOLS else "right")
+    return "center" if col in CENTERCOLS else ("left" if col in LEFTCOLS else "right")
 
 def add_back_button(ws, ncol, title):
     """Modern back-to-dashboard button (A1:B1) + centred 16pt title block (C1:ncol)."""
@@ -226,18 +283,21 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
         fdesc = "\n".join(f"• {d}" for _, d in tbl["funcs"])
         progs = "\n".join(f"• {n}" for n, _ in tbl["progs"])
         pdesc = "\n".join(f"• {d}" for _, d in tbl["progs"])
+        KT_COLOR = {"PK": RED, "FK": SLATE, "PK/FK": RED, "-": "9AA3AF"}
         for (tech, en, he) in tbl["fields"]:
             seq += 1
             band = th["b"] if seq % 2 == 0 else None
             s4b = S4_BAND if seq % 2 == 0 else None
+            kt = key_type(tbl["name"], tech)
             style(ws.cell(row, 1, seq), bold=True, fill=band, h="center", color="6B7280")
             style(ws.cell(row, 2, ""), fill=band)
             style(ws.cell(row, 3, ""), fill=band)
             style(ws.cell(row, 4, tech), bold=True, color=RED, fill=band, h="left")
             style(ws.cell(row, 5, en), fill=band, h="left")
             style(ws.cell(row, 6, he), fill=band, h="right")
-            for col in (7, 8, 9, 10): style(ws.cell(row, col, ""), fill=band)
-            for col in (11, 12, 13, 14): style(ws.cell(row, col, ""), fill=s4b)
+            style(ws.cell(row, 7, kt), bold=(kt != "-"), color=KT_COLOR[kt], fill=band, h="center")
+            for col in (8, 9, 10, 11): style(ws.cell(row, col, ""), fill=band)
+            for col in (12, 13, 14, 15, 16): style(ws.cell(row, col, ""), fill=s4b)
             ws.row_dimensions[row].height = 20
             index_rows.append(("שדה", tech, he, en, sname, f"D{row}"))
             row += 1
@@ -252,11 +312,11 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
                 ws.merge_cells(start_row=fstart, start_column=col, end_row=fend, end_column=col)
         vmerge(2, tbl["tcodes"], bold=True, color=SLATE)
         vmerge(3, tbl["name"], bold=True, color=RED)
-        vmerge(7, funcs, bold=True, color=SLATE); vmerge(8, fdesc)
-        vmerge(9, progs, bold=True, color=SLATE); vmerge(10, pdesc)
-        vmerge(11, tbl["s4_status"], color="37474F"); vmerge(12, tbl["s4_repl"], color="37474F")
-        vmerge(13, tbl["s4_tcode"], color="37474F"); vmerge(14, tbl["fiori"], bold=True, color=RED)
-        vmerge(15, sum_note(tbl), color="37474F")
+        vmerge(8, funcs, bold=True, color=SLATE); vmerge(9, fdesc)
+        vmerge(10, progs, bold=True, color=SLATE); vmerge(11, pdesc)
+        vmerge(12, tbl["s4_status"], color="37474F"); vmerge(13, tbl["s4_repl"], color="37474F")
+        vmerge(14, tbl["s4_tcode"], color="37474F"); vmerge(15, tbl["fiori"], bold=True, color=RED)
+        vmerge(16, sum_note(tbl), color="37474F")
 
         for code in [x.strip() for x in tbl["tcodes"].replace(";", ",").replace("/", ",").split(",") if x.strip()]:
             index_rows.append(("טרנזקציה", code, tbl["he"], tbl["en"], sname, f"A{fstart}"))
