@@ -626,32 +626,37 @@ JOINS = [
 ER = "ER - Join Map"
 table_loc = {m[0]: (m[3], m[4]) for m in tables_meta}   # table -> (sheet, cell)
 er = new_sheet(ER, SLATE)
-add_back_button(er, 9, "ER / Join Map  -  מפת קשרי מפתחות (PK ➜ FK) בין טבלאות PM  ·  CBC NEO")
+add_back_button(er, 10, "ER / Join Map  -  מפת קשרי מפתחות (PK ➜ FK) בין טבלאות PM  ·  CBC NEO")
 er_cols = [("מס' (#)", 6), ("טבלת ילד (FK)", 16), ("שדה זר (FK Field)", 18), ("➜", 5),
            ("טבלת אב (PK)", 16), ("שדה ראשי (PK Field)", 18), ("יחס (Card.)", 11),
-           ("תיאור הקשר (Hebrew)", 46), ("מעבר לטבלה", 13)]
+           ("JOIN ON (SQL syntax)", 34), ("תיאור הקשר (Hebrew)", 44), ("מעבר לטבלה", 13)]
 grid_header(er, er_cols, SLATE)
 rr = 3
 for i, (ct_, fkf, pt_, pkf, card, desc) in enumerate(JOINS, start=1):
     band = ZEBRA if i % 2 == 0 else None
-    vals = [i, ct_, fkf, "➜", pt_, pkf, card, desc, None]
+    join_on = f"{ct_}.{fkf} = {pt_}.{pkf}"
+    vals = [i, ct_, fkf, "➜", pt_, pkf, card, join_on, desc, None]
     for j, v in enumerate(vals, start=1):
         c = er.cell(rr, j, v if v is not None else "")
         bold = j in (2, 3, 5, 6)
         color = SLATE if j in (2, 3) else (RED if j in (5, 6) else INK)
         c.font = Font(name=FONT_NAME, bold=bold, size=10, color=color)
-        c.alignment = Alignment(horizontal=("center" if j in (1, 4, 7) else ("right" if j == 8 else "left")),
+        c.alignment = Alignment(horizontal=("center" if j in (1, 4, 7) else ("right" if j == 9 else "left")),
                                 vertical="center", wrap_text=True)
         c.border = BORDER
         if band: c.fill = PatternFill("solid", fgColor=band)
+    # JOIN ON cell - monospace SQL token (Consolas survives the font post-pass)
+    jc = er.cell(rr, 8)
+    jc.font = Font(name="Consolas", bold=True, size=10, color="0B5394")
+    jc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
     loc = table_loc.get(ct_)
-    lk = er.cell(rr, 9)
+    lk = er.cell(rr, 10)
     if loc:
         lk.value = f'=HYPERLINK("#\'"&"{loc[0]}"&"\'!{loc[1]}","➜ פתח")'
         lk.font = Font(name=FONT_NAME, color="0563C1", underline="single", size=9)
         lk.alignment = Alignment(horizontal="center")
     er.row_dimensions[rr].height = 24
-    index_rows.append(("Join", f"{ct_}.{fkf} -> {pt_}.{pkf}", desc, "", ER, f"A{rr}"))
+    index_rows.append(("Join", join_on, desc, "", ER, f"A{rr}"))
     rr += 1
 
 # ---- pandas index frame (drives both the FILTER formula and the macro) ----
@@ -867,7 +872,7 @@ for sh in wb.worksheets:
     for rowcells in sh.iter_rows():
         for cell in rowcells:
             ftn = cell.font
-            if ftn is not None and ftn.name != FONT_NAME:
+            if ftn is not None and ftn.name not in (FONT_NAME, "Consolas"):
                 cell.font = Font(name=FONT_NAME, size=ftn.size, bold=ftn.bold,
                                  italic=ftn.italic, color=ftn.color, underline=ftn.underline)
 
