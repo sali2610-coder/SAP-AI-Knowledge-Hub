@@ -518,6 +518,107 @@ for st_name, fillc in CCC_FILL.items():
                    fill=PatternFill("solid", fgColor=fillc),
                    font=Font(name=FONT_NAME, bold=True, color=CCC_TXT[st_name])))
 
+# === ER / Join Map =========================================================
+# Curated PK -> FK relationships. (child_table, fk_field, parent_table, pk_field, cardinality, he_desc)
+JOINS = [
+ # -- Org structure & technical objects --
+ ("IFLOS", "TPLNR", "IFLOT", "TPLNR", "1:1", "תווית מיקום פונקציונלי מצורפת לרשומת האב"),
+ ("IFLOT", "TPLMA", "IFLOT", "TPLNR", "N:1", "היררכיית מיקומים - מיקום אב (self-join)"),
+ ("IFLOT", "OBJNR", "JSTO", "OBJNR", "1:1", "אובייקט הסטטוס של המיקום הפונקציונלי"),
+ ("ILOA",  "TPLNR", "IFLOT", "TPLNR", "N:1", "נתוני מיקום/חיוב משויכים למיקום הפונקציונלי"),
+ ("ILOA",  "GEWRK", "CRHD",  "OBJID", "N:1", "מרכז עבודה ראשי אחראי"),
+ ("CRTX",  "OBJID", "CRHD",  "OBJID", "N:1", "טקסטים של מרכז העבודה (לפי שפה)"),
+ # -- Equipment --
+ ("EQKT",  "EQUNR", "EQUI",  "EQUNR", "N:1", "טקסטים של הציוד (לפי שפה)"),
+ ("EQUZ",  "EQUNR", "EQUI",  "EQUNR", "N:1", "פלחי זמן של הציוד (התקנות לאורך זמן)"),
+ ("EQUZ",  "HEQUI", "EQUI",  "EQUNR", "N:1", "ציוד עליון בהיררכיה (self-join דרך EQUI)"),
+ ("EQUZ",  "ILOAN", "ILOA",  "ILOAN", "N:1", "נתוני מיקום/חיוב של הציוד בפלח הזמן"),
+ ("EQUI",  "OBJNR", "JSTO",  "OBJNR", "1:1", "אובייקט הסטטוס של הציוד"),
+ ("OBJK",  "EQUNR", "EQUI",  "EQUNR", "N:1", "מספר סידורי משויך לרשומת ציוד"),
+ # -- BOM --
+ ("STPO",  "STLNR", "STKO",  "STLNR", "N:1", "פריטי עץ המוצר תחת הכותרת"),
+ ("MAST",  "STLNR", "STKO",  "STLNR", "N:1", "קישור חומר לכותרת עץ המוצר"),
+ ("EQST",  "STLNR", "STKO",  "STLNR", "N:1", "קישור ציוד לעץ המוצר"),
+ ("EQST",  "EQUNR", "EQUI",  "EQUNR", "N:1", "עץ המוצר של הציוד"),
+ ("TPST",  "STLNR", "STKO",  "STLNR", "N:1", "קישור מיקום לעץ המוצר"),
+ ("TPST",  "TPLNR", "IFLOT", "TPLNR", "N:1", "עץ המוצר של המיקום הפונקציונלי"),
+ # -- Measuring --
+ ("IMRG",  "POINT", "IMPTT", "POINT", "N:1", "מסמכי מדידה תחת נקודת המדידה"),
+ # -- Catalogs --
+ ("QPCD",  "CODEGRUPPE", "QPGR", "CODEGRUPPE", "N:1", "קודים בתוך קבוצת הקוד"),
+ ("T352B", "CODEGRUPPE", "QPGR", "CODEGRUPPE", "N:1", "קבוצות קוד מותרות בפרופיל הקטלוג"),
+ # -- Notifications --
+ ("QMFE",  "QMNUM", "QMEL",  "QMNUM", "N:1", "פריטי הליקוי תחת ההודעה"),
+ ("QMUR",  "QMNUM", "QMFE",  "QMNUM", "N:1", "סיבות תחת פריט ההודעה (דרך QMNUM+FENUM)"),
+ ("QMMA",  "QMNUM", "QMEL",  "QMNUM", "N:1", "פעילויות שבוצעו תחת ההודעה"),
+ ("QMSM",  "QMNUM", "QMEL",  "QMNUM", "N:1", "משימות לטיפול תחת ההודעה"),
+ ("QMEL",  "EQUNR", "EQUI",  "EQUNR", "N:1", "ההודעה מתייחסת לציוד"),
+ ("QMEL",  "TPLNR", "IFLOT", "TPLNR", "N:1", "ההודעה מתייחסת למיקום פונקציונלי"),
+ ("QMEL",  "OBJNR", "JSTO",  "OBJNR", "1:1", "אובייקט הסטטוס של ההודעה"),
+ # -- Orders --
+ ("AFKO",  "AUFNR", "AUFK",  "AUFNR", "1:1", "כותרת נתוני האחזקה/ייצור של הפק\"ע"),
+ ("AFPO",  "AUFNR", "AUFK",  "AUFNR", "N:1", "פריטי הפק\"ע"),
+ ("AFIH",  "AUFNR", "AUFK",  "AUFNR", "1:1", "כותרת נתוני האחזקה (PM) של הפק\"ע"),
+ ("AFVC",  "AUFPL", "AFKO",  "AUFPL", "N:1", "פעולות הפק\"ע תחת תוכנית הפעולות"),
+ ("AFVC",  "ARBID", "CRHD",  "OBJID", "N:1", "מרכז העבודה המבצע את הפעולה"),
+ ("AFIH",  "EQUNR", "EQUI",  "EQUNR", "N:1", "הפק\"ע מתייחסת לציוד"),
+ ("AFIH",  "TPLNR", "IFLOT", "TPLNR", "N:1", "הפק\"ע מתייחסת למיקום פונקציונלי"),
+ ("AUFK",  "OBJNR", "JSTO",  "OBJNR", "1:1", "אובייקט הסטטוס/CO של הפק\"ע"),
+ # -- Status --
+ ("JEST",  "OBJNR", "JSTO",  "OBJNR", "N:1", "סטטוסים פעילים תחת אובייקט הסטטוס"),
+ ("JSTO",  "STSMA", "TJ30T", "STSMA", "N:1", "פרופיל הסטטוס של האובייקט"),
+ # -- MM integration --
+ ("RESB",  "AUFNR", "AUFK",  "AUFNR", "N:1", "הזמנות רכיבים של הפק\"ע"),
+ ("MSEG",  "MBLNR", "MKPF",  "MBLNR", "N:1", "פריטי מסמך החומר תחת הכותרת"),
+ ("MSEG",  "AUFNR", "AUFK",  "AUFNR", "N:1", "תנועת המלאי מחויבת לפק\"ע"),
+ ("EBKN",  "BANFN", "EBAN",  "BANFN", "N:1", "חיוב דרישת הרכש"),
+ ("EBKN",  "AUFNR", "AUFK",  "AUFNR", "N:1", "דרישת הרכש מחויבת לפק\"ע"),
+ # -- CO integration --
+ ("COSP",  "OBJNR", "AUFK",  "OBJNR", "N:1", "סך עלויות חיצוניות לפי אובייקט הפק\"ע"),
+ ("COSS",  "OBJNR", "AUFK",  "OBJNR", "N:1", "סך עלויות פנימיות לפי אובייקט הפק\"ע"),
+ ("COBRA", "OBJNR", "AUFK",  "OBJNR", "1:1", "כותרת חוק ההתחשבנות של הפק\"ע"),
+ ("COBRB", "OBJNR", "COBRA", "OBJNR", "N:1", "פריטי חוק ההתחשבנות (חוקי חלוקה)"),
+ # -- Preventive maintenance --
+ ("MPOS",  "WARPL", "MPLA",  "WARPL", "N:1", "פריטי תכנית האחזקה"),
+ ("MPOS",  "EQUNR", "EQUI",  "EQUNR", "N:1", "פריט התכנית מתייחס לציוד"),
+ ("MPOS",  "PLNNR", "PLKO",  "PLNNR", "N:1", "רשימת הפעולות המשויכת לפריט"),
+ ("MHIO",  "WARPL", "MPLA",  "WARPL", "N:1", "אובייקטי קריאת התכנית"),
+ ("MHIO",  "AUFNR", "AUFK",  "AUFNR", "N:1", "הפק\"ע שנוצרה מהקריאה"),
+ ("MHIS",  "WARPL", "MPLA",  "WARPL", "N:1", "היסטוריית התזמון של התכנית"),
+ ("PLPO",  "PLNNR", "PLKO",  "PLNNR", "N:1", "פעולות רשימת הפעולות תחת הכותרת"),
+ ("PLPO",  "ARBID", "CRHD",  "OBJID", "N:1", "מרכז העבודה של הפעולה ברשימה"),
+]
+ER = "ER - Join Map"
+table_loc = {m[0]: (m[3], m[4]) for m in tables_meta}   # table -> (sheet, cell)
+er = new_sheet(ER, SLATE)
+add_back_button(er, 9, "ER / Join Map  -  מפת קשרי מפתחות (PK ➜ FK) בין טבלאות PM  ·  CBC NEO")
+er_cols = [("מס' (#)", 6), ("טבלת ילד (FK)", 16), ("שדה זר (FK Field)", 18), ("➜", 5),
+           ("טבלת אב (PK)", 16), ("שדה ראשי (PK Field)", 18), ("יחס (Card.)", 11),
+           ("תיאור הקשר (Hebrew)", 46), ("מעבר לטבלה", 13)]
+grid_header(er, er_cols, SLATE)
+rr = 3
+for i, (ct_, fkf, pt_, pkf, card, desc) in enumerate(JOINS, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    vals = [i, ct_, fkf, "➜", pt_, pkf, card, desc, None]
+    for j, v in enumerate(vals, start=1):
+        c = er.cell(rr, j, v if v is not None else "")
+        bold = j in (2, 3, 5, 6)
+        color = SLATE if j in (2, 3) else (RED if j in (5, 6) else INK)
+        c.font = Font(name=FONT_NAME, bold=bold, size=10, color=color)
+        c.alignment = Alignment(horizontal=("center" if j in (1, 4, 7) else ("right" if j == 8 else "left")),
+                                vertical="center", wrap_text=True)
+        c.border = BORDER
+        if band: c.fill = PatternFill("solid", fgColor=band)
+    loc = table_loc.get(ct_)
+    lk = er.cell(rr, 9)
+    if loc:
+        lk.value = f'=HYPERLINK("#\'"&"{loc[0]}"&"\'!{loc[1]}","➜ פתח")'
+        lk.font = Font(name=FONT_NAME, color="0563C1", underline="single", size=9)
+        lk.alignment = Alignment(horizontal="center")
+    er.row_dimensions[rr].height = 24
+    index_rows.append(("Join", f"{ct_}.{fkf} -> {pt_}.{pkf}", desc, "", ER, f"A{rr}"))
+    rr += 1
+
 # ---- pandas index frame (drives both the FILTER formula and the macro) ----
 df_index = pd.DataFrame(index_rows, columns=["סוג", "קוד", "עברית", "English", "גיליון", "תא"])
 N = len(df_index)
@@ -601,6 +702,7 @@ nav_items = [(t["title"], sn, TH[t["theme"]]["t"]) for t, sn in zip(TOPICS, shee
 nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, SILVER))
 nav_items.append(("◆ " + COCKPIT, COCKPIT, RED))
 nav_items.append(("⚙ " + CCC, CCC, SLATE))
+nav_items.append(("⇄ " + ER, ER, RED))
 r = 10
 for i, (title, sn, hdr) in enumerate(nav_items):
     slot = i % 4
