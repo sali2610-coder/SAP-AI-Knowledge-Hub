@@ -104,12 +104,13 @@ PK = {
  "QPCD": {"KATALOGART", "CODEGRUPPE", "CODE", "VERSION"}, "QPGR": {"KATALOGART", "CODEGRUPPE"},
  "T352B": {"RBNR", "KATALOGART"}, "T352": {"RBNR"},
  "QMEL": {"QMNUM"}, "QMFE": {"QMNUM", "FENUM"}, "QMUR": {"QMNUM", "FENUM", "URNUM"},
- "QMMA": {"QMNUM", "MANUM"}, "QMSM": {"QMNUM", "MANUM"},
+ "QMMA": {"QMNUM", "MANUM"}, "QMSM": {"QMNUM", "MANUM"}, "TQ80": {"QMART"},
  "AUFK": {"AUFNR"}, "AFKO": {"AUFNR"}, "AFVC": {"AUFPL", "APLZL"}, "AFPO": {"AUFNR", "POSNR"},
- "AFIH": {"AUFNR"}, "AFWI": {"RUECK", "RMZHL"},
- "JEST": {"OBJNR", "STAT"}, "JSTO": {"OBJNR"}, "TJ02T": {"ISTAT", "SPRAS"}, "TJ30T": {"STSMA", "ESTAT", "SPRAS"},
+ "AFIH": {"AUFNR"}, "AFWI": {"RUECK", "RMZHL"}, "T003O": {"AUART"},
+ "JEST": {"OBJNR", "STAT"}, "JSTO": {"OBJNR"}, "TJ02T": {"ISTAT", "SPRAS"},
+ "TJ30T": {"STSMA", "ESTAT", "SPRAS"}, "TJ30": {"STSMA", "ESTAT"},
  "RESB": {"RSNUM", "RSPOS"}, "EBAN": {"BANFN", "BNFPO"}, "EBKN": {"BANFN", "BNFPO"},
- "MSEG": {"MBLNR", "ZEILE"}, "MKPF": {"MBLNR", "MJAHR"},
+ "MSEG": {"MBLNR", "ZEILE"}, "MKPF": {"MBLNR", "MJAHR"}, "BUT000": {"PARTNER"},
  "COSP": {"OBJNR", "GJAHR", "WRTTP", "KSTAR"}, "COSS": {"OBJNR", "GJAHR", "WRTTP", "KSTAR"},
  "COBRA": {"OBJNR"}, "COBRB": {"OBJNR", "BUREG"},
  "PLKO": {"PLNTY", "PLNNR", "PLNAL"}, "PLPO": {"PLNTY", "PLNNR"},
@@ -123,11 +124,12 @@ FK = {
  "STKO": set(), "STPO": {"IDNRK"}, "MAST": {"MATNR", "STLNR"}, "EQST": {"EQUNR", "STLNR"}, "TPST": {"TPLNR", "STLNR"},
  "IMPTT": {"MPOBJ", "ATINN"}, "IMRG": {"POINT"},
  "QPCD": set(), "QPGR": set(), "T352B": {"CODEGRUPPE"}, "T352": set(),
- "QMEL": {"EQUNR", "TPLNR", "OBJNR"}, "QMFE": {"QMNUM"}, "QMUR": {"QMNUM", "FENUM"},
- "QMMA": {"QMNUM"}, "QMSM": {"QMNUM"},
- "AUFK": {"OBJNR", "KOSTV"}, "AFKO": {"AUFNR", "AUFPL", "PLNBEZ"}, "AFVC": {"AUFPL", "ARBID"},
+ "QMEL": {"EQUNR", "TPLNR", "OBJNR", "QMART"}, "QMFE": {"QMNUM"}, "QMUR": {"QMNUM", "FENUM"},
+ "QMMA": {"QMNUM"}, "QMSM": {"QMNUM"}, "TQ80": {"RBNR", "AUART"},
+ "AUFK": {"OBJNR", "KOSTV", "AUART"}, "AFKO": {"AUFNR", "AUFPL", "PLNBEZ"}, "AFVC": {"AUFPL", "ARBID"},
  "AFPO": {"AUFNR", "MATNR"}, "AFIH": {"AUFNR", "EQUNR", "TPLNR", "GEWRK"}, "AFWI": {"RUECK", "MBLNR", "MATNR"},
- "JEST": {"OBJNR"}, "JSTO": {"STSMA"}, "TJ02T": set(), "TJ30T": set(),
+ "T003O": {"STSMA"},
+ "JEST": {"OBJNR"}, "JSTO": {"STSMA"}, "TJ02T": set(), "TJ30T": set(), "TJ30": {"STSMA"}, "BUT000": set(),
  "RESB": {"MATNR", "AUFNR"}, "EBAN": {"MATNR"}, "EBKN": {"BANFN", "BNFPO", "AUFNR", "KOSTL", "SAKTO"},
  "MSEG": {"MBLNR", "MATNR", "AUFNR"}, "MKPF": set(),
  "COSP": {"OBJNR", "KSTAR"}, "COSS": {"OBJNR", "KSTAR", "PARGB"}, "COBRA": {"OBJNR"}, "COBRB": {"OBJNR", "EMPGE"},
@@ -409,70 +411,100 @@ for i, (obj, title, note, cat, impact) in enumerate(SIMPLIFICATION, start=1):
     index_rows.append(("SAP Note", note, title, obj, SIMP_SHEET, f"A{rr}"))
     rr += 1
 
-# === Cockpit - migration tracking ==========================================
+# === Cockpit - migration tracking (with top KPI & Summary block) ===========
 STATUSES = ["Not started", "In analysis", "In conversion", "Tested", "Done"]
 # branded soft pastels: rose for open, silver for analysis/conversion, soft green for done
 STATUS_FILL = {"Not started": "FCE4E6", "In analysis": "ECEFF1", "In conversion": "E1E6EA",
                "Tested": "DCE6EC", "Done": "DCEFE0"}
 STATUS_TXT = {"Not started": "B01722", "In analysis": "475569", "In conversion": "37474F",
               "Tested": "2A4A57", "Done": "1E5A44"}
+COCK_DS = 8                                   # data table starts at row 8 (KPI block occupies 2-6)
 cock = new_sheet(COCKPIT, RED)
 add_back_button(cock, 9, "Cockpit מעקב מיגרציה  -  Migration Tracking (NEO Project)")
 cock_cols = [("מס' (#)", 6), ("מודול / נושא", 26), ("אובייקט / טבלה", 16), ("סטטוס מעבר (Status)", 18),
              ("אחראי (Owner)", 16), ("תאריך יעד", 13), ("תאריך סיום", 13),
              ("הערות / בלוקרים", 34), ("קישור לגיליון", 14)]
-grid_header(cock, cock_cols, SLATE)
-rr = 3
+for j, (lbl, w) in enumerate(cock_cols, start=1):
+    cock.column_dimensions[get_column_letter(j)].width = w
+cock_last = COCK_DS + len(tables_meta) - 1     # known up-front -> KPI formulas can reference it
+DR = f"$D${COCK_DS}:$D${cock_last}"
+CR_C = f"$C${COCK_DS}:$C${cock_last}"
+
+# --- KPI & Summary block (TOP) - all live COUNTIF, zero chart objects ---
+cock.merge_cells("B2:I2")
+kb = cock.cell(2, 2, "KPI & Summary  -  סיכום חי של מצב המיגרציה (מבוסס COUNTIF; בסיס מוכן לגרף נייטיב ב-2 קליקים)")
+kb.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); kb.fill = PatternFill("solid", fgColor=RED)
+kb.alignment = Alignment(horizontal="right")
+kpi_tiles = [("סה\"כ אובייקטים", f"=COUNTA({CR_C})", SLATE, "ECEFF1"),
+             ("הושלם (Done)", f'=COUNTIF({DR},"Done")', "1E5A44", "DCEFE0"),
+             ("נבדק (Tested)", f'=COUNTIF({DR},"Tested")', "2A4A57", "DCE6EC"),
+             ("בתהליך (In Progress)", f'=COUNTIF({DR},"In analysis")+COUNTIF({DR},"In conversion")', "37474F", "E1E6EA"),
+             ("פתוח (Open)", f'=COUNTIF({DR},"Not started")', "B01722", "FCE4E6"),
+             ("% השלמה", f'=IFERROR(COUNTIF({DR},"Done")/COUNTA({CR_C}),0)', RED, "FBE3E4")]
+for k, (lbl, fm, txt, fillc) in enumerate(kpi_tiles):
+    cc = 2 + k
+    n = cock.cell(3, cc, fm); n.font = Font(name=FONT_NAME, bold=True, size=18, color=txt)
+    n.alignment = Alignment(horizontal="center", vertical="center"); n.fill = PatternFill("solid", fgColor=fillc)
+    n.border = BORDER
+    if "%" in lbl: n.number_format = "0%"
+    l = cock.cell(4, cc, lbl); l.font = Font(name=FONT_NAME, bold=True, size=9, color=txt)
+    l.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    l.fill = PatternFill("solid", fgColor=fillc); l.border = BORDER
+cock.row_dimensions[3].height = 30; cock.row_dimensions[4].height = 20
+
+# status -> count summary (cols B:C of the KPI area, rows 6 row) used as the chart source
+cock.cell(6, 2, "מקור לגרף (Chart source):").font = Font(name=FONT_NAME, bold=True, size=9, color=SLATE)
+cock.cell(6, 2).alignment = Alignment(horizontal="right")
+for k, stt in enumerate(STATUSES):                              # K3:L7 - clean status/count pairs for native chart
+    rk = 3 + k
+    a = cock.cell(rk, 11, stt); a.font = Font(name=FONT_NAME, bold=True, size=10, color=STATUS_TXT[stt])
+    a.fill = PatternFill("solid", fgColor=STATUS_FILL[stt]); a.alignment = Alignment(horizontal="right"); a.border = BORDER
+    b = cock.cell(rk, 12, f'=COUNTIF({DR},$K{rk})')
+    b.font = Font(name=FONT_NAME, bold=True, size=11, color=INK); b.alignment = Alignment(horizontal="center"); b.border = BORDER
+cock.cell(2, 11, "סטטוס (Status)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+cock.cell(2, 12, "כמות (Count)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+for cc_ in (11, 12):
+    cock.cell(2, cc_).fill = PatternFill("solid", fgColor=SLATE)
+    cock.cell(2, cc_).alignment = Alignment(horizontal="center"); cock.cell(2, cc_).border = BORDER
+cock.cell(8, 11, 'סה"כ').font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+cock.cell(8, 11).fill = PatternFill("solid", fgColor="64748B"); cock.cell(8, 11).border = BORDER
+cock.cell(8, 11).alignment = Alignment(horizontal="right")
+tt = cock.cell(8, 12, f'=SUM($L$3:$L$7)'); tt.font = Font(name=FONT_NAME, bold=True, size=11, color=INK)
+tt.alignment = Alignment(horizontal="center"); tt.border = BORDER
+cock.column_dimensions["K"].width = 16; cock.column_dimensions["L"].width = 12
+
+# --- tracking table: headers at row 7, data from row 8 ---
+for j, (lbl, w) in enumerate(cock_cols, start=1):
+    c = cock.cell(7, j, lbl)
+    c.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=SLATE)
+    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); c.border = BORDER
+cock.row_dimensions[7].height = 28
+cock.freeze_panes = "A8"
+rr = COCK_DS
 for i, (tname, the, ttitle, tsheet, tcell, ttheme) in enumerate(tables_meta, start=1):
     band = ZEBRA if i % 2 == 0 else None
     vals = [i, f"{ttitle}  -  {the}", tname, "Not started", "", "", "", "", None]
     for j, v in enumerate(vals, start=1):
         c = cock.cell(rr, j, v if v is not None else "")
-        c.font = Font(name=FONT_NAME, bold=(j == 3), size=10,
-                      color=RED if j == 3 else INK)
+        c.font = Font(name=FONT_NAME, bold=(j == 3), size=10, color=RED if j == 3 else INK)
         c.alignment = Alignment(horizontal=("center" if j in (1, 4, 6, 7, 9) else ("left" if j == 3 else "right")),
                                 vertical="center", wrap_text=True)
         c.border = BORDER
         if band: c.fill = PatternFill("solid", fgColor=band)
-    # status default styling
     sc = cock.cell(rr, 4); sc.fill = PatternFill("solid", fgColor=STATUS_FILL["Not started"])
     sc.font = Font(name=FONT_NAME, bold=True, size=10, color=STATUS_TXT["Not started"])
     lk = cock.cell(rr, 9); lk.value = f'=HYPERLINK("#\'"&"{tsheet}"&"\'!{tcell}","➜ פתח")'
     lk.font = Font(name=FONT_NAME, color="0563C1", underline="single", size=9)
     cock.row_dimensions[rr].height = 22
     rr += 1
-cock_last = rr - 1
 dv = DataValidation(type="list", formula1='"%s"' % ",".join(STATUSES), allow_blank=True)
 dv.error = "בחר סטטוס מהרשימה"; dv.prompt = "בחר סטטוס מעבר"
-cock.add_data_validation(dv); dv.add(f"D3:D{cock_last}")
+cock.add_data_validation(dv); dv.add(f"D{COCK_DS}:D{cock_last}")
 for st_name, fillc in STATUS_FILL.items():
-    cock.conditional_formatting.add(f"D3:D{cock_last}",
+    cock.conditional_formatting.add(f"D{COCK_DS}:D{cock_last}",
         CellIsRule(operator="equal", formula=[f'"{st_name}"'],
                    fill=PatternFill("solid", fgColor=fillc),
                    font=Font(name=FONT_NAME, bold=True, color=STATUS_TXT[st_name])))
-
-# --- status summary table (cols K:L) - live COUNTIF (text/number cells only, no chart objects) ---
-cock.cell(2, 11, "סטטוס (Status)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
-cock.cell(2, 12, "כמות (Count)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
-for cc_ in (11, 12):
-    cock.cell(2, cc_).fill = PatternFill("solid", fgColor=DASH_HDR)
-    cock.cell(2, cc_).alignment = Alignment(horizontal="center", vertical="center")
-    cock.cell(2, cc_).border = BORDER
-for k, stt in enumerate(STATUSES):
-    rk = 3 + k
-    a = cock.cell(rk, 11, stt); a.font = Font(name=FONT_NAME, bold=True, size=10, color=STATUS_TXT[stt])
-    a.fill = PatternFill("solid", fgColor=STATUS_FILL[stt]); a.alignment = Alignment(horizontal="right")
-    a.border = BORDER
-    b = cock.cell(rk, 12, f'=COUNTIF($D$3:$D${cock_last},$K{rk})')
-    b.font = Font(name=FONT_NAME, bold=True, size=11, color=INK); b.alignment = Alignment(horizontal="center")
-    b.border = BORDER
-trow = 3 + len(STATUSES)
-cock.cell(trow, 11, 'סה"כ').font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
-cock.cell(trow, 11).fill = PatternFill("solid", fgColor="64748B"); cock.cell(trow, 11).border = BORDER
-cock.cell(trow, 11).alignment = Alignment(horizontal="right")
-tt = cock.cell(trow, 12, f'=SUM($L$3:$L${trow-1})'); tt.font = Font(name=FONT_NAME, bold=True, size=11, color=INK)
-tt.alignment = Alignment(horizontal="center"); tt.border = BORDER
-cock.column_dimensions["K"].width = 16; cock.column_dimensions["L"].width = 12
 
 # === Custom Code Check =====================================================
 CCC_STATUS = ["To review", "In progress", "Adapted", "OK - no change", "Obsolete"]
@@ -555,6 +587,7 @@ JOINS = [
  ("QMEL",  "EQUNR", "EQUI",  "EQUNR", "N:1", "ההודעה מתייחסת לציוד"),
  ("QMEL",  "TPLNR", "IFLOT", "TPLNR", "N:1", "ההודעה מתייחסת למיקום פונקציונלי"),
  ("QMEL",  "OBJNR", "JSTO",  "OBJNR", "1:1", "אובייקט הסטטוס של ההודעה"),
+ ("QMEL",  "QMART", "TQ80",  "QMART", "N:1", "סוג ההודעה מגדיר פריסת מסך ופרופיל קטלוג"),
  # -- Orders --
  ("AFKO",  "AUFNR", "AUFK",  "AUFNR", "1:1", "כותרת נתוני האחזקה/ייצור של הפק\"ע"),
  ("AFPO",  "AUFNR", "AUFK",  "AUFNR", "N:1", "פריטי הפק\"ע"),
@@ -564,9 +597,11 @@ JOINS = [
  ("AFIH",  "EQUNR", "EQUI",  "EQUNR", "N:1", "הפק\"ע מתייחסת לציוד"),
  ("AFIH",  "TPLNR", "IFLOT", "TPLNR", "N:1", "הפק\"ע מתייחסת למיקום פונקציונלי"),
  ("AUFK",  "OBJNR", "JSTO",  "OBJNR", "1:1", "אובייקט הסטטוס/CO של הפק\"ע"),
+ ("AUFK",  "AUART", "T003O", "AUART", "N:1", "סוג הפקודה מגדיר פרמטרים, טווח מספרים ופרופיל סטטוס"),
  # -- Status --
  ("JEST",  "OBJNR", "JSTO",  "OBJNR", "N:1", "סטטוסים פעילים תחת אובייקט הסטטוס"),
- ("JSTO",  "STSMA", "TJ30T", "STSMA", "N:1", "פרופיל הסטטוס של האובייקט"),
+ ("JSTO",  "STSMA", "TJ30",  "STSMA", "N:1", "פרופיל הסטטוס מגדיר את סטטוסי המשתמש"),
+ ("T003O", "STSMA", "TJ30",  "STSMA", "N:1", "פרופיל הסטטוס המשויך לסוג הפקודה"),
  # -- MM integration --
  ("RESB",  "AUFNR", "AUFK",  "AUFNR", "N:1", "הזמנות רכיבים של הפק\"ע"),
  ("MSEG",  "MBLNR", "MKPF",  "MBLNR", "N:1", "פריטי מסמך החומר תחת הכותרת"),
@@ -657,11 +692,11 @@ for rrn in (2, 3):
 #  KPI strip (top) - live counts from the Cockpit status column
 # ---------------------------------------------------------------------------
 CR = f"'{COCKPIT}'"                                   # quoted cockpit sheet ref
-TOTcnt  = f"COUNTA({CR}!$C$3:$C${cock_last})"
-DONEcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Done")'
-TESTcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Tested")'
-PROGcnt = f'(COUNTIF({CR}!$D$3:$D${cock_last},"In analysis")+COUNTIF({CR}!$D$3:$D${cock_last},"In conversion"))'
-OPENcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Not started")'
+TOTcnt  = f"COUNTA({CR}!$C${COCK_DS}:$C${cock_last})"
+DONEcnt = f'COUNTIF({CR}!$D${COCK_DS}:$D${cock_last},"Done")'
+TESTcnt = f'COUNTIF({CR}!$D${COCK_DS}:$D${cock_last},"Tested")'
+PROGcnt = f'(COUNTIF({CR}!$D${COCK_DS}:$D${cock_last},"In analysis")+COUNTIF({CR}!$D${COCK_DS}:$D${cock_last},"In conversion"))'
+OPENcnt = f'COUNTIF({CR}!$D${COCK_DS}:$D${cock_last},"Not started")'
 
 dash.merge_cells("B5:H5")
 kh = dash.cell(5, 2, "סיכום התקדמות מיגרציה  (KPI - מתעדכן אוטומטית מ-Cockpit)")
