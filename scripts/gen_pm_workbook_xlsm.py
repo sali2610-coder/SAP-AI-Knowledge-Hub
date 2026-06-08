@@ -47,6 +47,7 @@ DASH = "מסך ניווט מרכזי"
 SIMP_SHEET = "Simplification Item list"
 COCKPIT = "Cockpit מעקב מיגרציה"
 CCC = "Custom Code Check"
+CFG = "Config Guide"
 
 # ---------------------------------------------------------------------------
 #  UI/UX DESIGN SYSTEM - CBC Israel / Coca-Cola Red corporate brand identity
@@ -78,7 +79,7 @@ TH = {
  "cross":  {"h": SLATE, "s": SLATE2, "b": ZEBRA, "t": SILVER},   # integration = silver tab
 }
 
-SEARCH_CELL = "C25"          # visible search box (must match the macro & VML anchor)
+SEARCH_CELL = "C28"          # visible search box (must match the macro)
 IDX_COL0 = 16                # column P - first index column (hidden block on dashboard)
 
 # Insert a Key Type (PK/FK) column right after the Hebrew field column, and append the SUM column.
@@ -662,6 +663,82 @@ for i, (ct_, fkf, pt_, pkf, card, desc) in enumerate(JOINS, start=1):
     index_rows.append(("Join", join_on, desc, "", ER, f"A{rr}"))
     rr += 1
 
+# === Config Guide - encyclopedic SPRO / Customizing knowledge layer =========
+HELP_PM   = "https://help.sap.com/docs/SAP_S4HANA_ON-PREMISE"
+COMM_EAM  = "https://community.sap.com/topics/enterprise-asset-management"
+FIORI_LIB = "https://fioriappslibrary.hana.ondemand.com/"
+SIC_CAT   = "https://launchpad.support.sap.com/#/sic"
+def NOTE(n): return f"https://launchpad.support.sap.com/#/notes/{n}"
+
+# (object, tcode, guide_he, terminology, help_url, help_label, ext_url, ext_label)
+CONFIG_GUIDE = [
+ ("T003O - סוגי פק\"ע (Order Types; הוגדר כ-T350)", "SPRO; OIOA",
+  "מגדיר את סוגי פקודות העבודה (PM01 שגרתי, PM02 שירות חיצוני, PM03 השבתה). לכל סוג קובעים טווח מספרים, "
+  "קטגוריית פקודה (30=PM), פרופיל סטטוס, פרופיל התחשבנות וברירות מחדל. נתיב SPRO: Plant Maintenance and "
+  "Customer Service ◄ Maintenance and Service Orders ◄ Functions and Settings for Order Types ◄ Configure "
+  "Order Types. ל-CBC: הפרדת סוגי פק\"ע לפי זרם עבודה (מפעל/קו ייצור) מאפשרת בקרת עלות ודיווח נפרדים, "
+  "והקצאת פרופיל סטטוס ייעודי לכל תהליך.",
+  "סוג פקודה = Order Type\nקטגוריית פקודה = Order Category\nטווח מספרים = Number Range\nפרופיל התחשבנות = Settlement Profile",
+  HELP_PM, "SAP Help - PM Orders", COMM_EAM, "SAP Community EAM"),
+ ("T356 - עדיפויות (Priorities)", "SPRO; OIOH",
+  "מגדיר את טבלת העדיפויות (1=דחוף ... 4=נמוך) וסוגי העדיפות (Priority Type) המקושרים לסוגי הודעה/פק\"ע. "
+  "לכל עדיפות נקבע מרווח זמן יחסי לחישוב אוטומטי של תאריך התחלה/סיום נדרש (Relative Start/End). ל-CBC: "
+  "עדיפות 'תקלת קו ייצור' מתורגמת אוטומטית למועד טיפול מיידי (SLA), ומאפשרת ניטור הפרות SLA בדוחות PMIS.",
+  "עדיפות = Priority\nסוג עדיפות = Priority Type\nתאריך התחלה נדרש = Required Start\nמרווח יחסי = Relative Interval",
+  HELP_PM, "SAP Help - Priorities", COMM_EAM, "SAP Community EAM"),
+ ("TQ80 - סוגי הודעה (Notification Types)", "OIAL; SPRO, QCC0",
+  "מגדיר את סוגי הודעת האחזקה (M1 בקשה, M2 תקלה, M3 פעילות) ומקשר לכל סוג: פרופיל קטלוג (קודים מותרים), "
+  "פריסת מסך (OIAL), סוג פק\"ע ברירת מחדל וטווח מספרים. ל-CBC: הפרדה בין הודעת תקלה (M2) לבקשת שיפור (M1) "
+  "מאפשרת ניתוח אמינות (MTBF/MTTR) נפרד וזרימת אישורים שונה לכל סוג.",
+  "סוג הודעה = Notification Type\nפרופיל קטלוג = Catalog Profile\nפריסת מסך = Screen Layout\nקבוצת קוד = Code Group",
+  HELP_PM, "SAP Help - Notifications", FIORI_LIB, "Report Malfunction F2215"),
+ ("TJ30 - פרופיל סטטוס משתמש (User Status Profile)", "BS02; OIBS",
+  "מגדיר פרופיל סטטוס משתמש ובתוכו סטטוסים מותאמים אישית (למשל 'ממתין לחלקים', 'אושר תקציב') עם סדר מעבר, "
+  "חסימה/התרה של תהליכים עסקיים (Business Transactions), וסטטוס ראשוני. נתיב: BS02. ל-CBC: סטטוס 'אישור "
+  "בטיחות' חוסם שחרור פק\"ע (REL) עד לאישור, ואוכף תהליך עבודה ארגוני מעבר לסטטוס המערכת הקבוע.",
+  "פרופיל סטטוס = Status Profile\nסטטוס משתמש = User Status\nתהליך עסקי = Business Transaction\nסטטוס ראשוני = Initial Status",
+  HELP_PM, "SAP Help - Status Mgmt", COMM_EAM, "SAP Community EAM"),
+ ("TJ30T - טקסטים של סטטוס משתמש (User Status Texts)", "BS02; BS03",
+  "מאחסן את הטקסטים הרב-לשוניים של סטטוסי המשתמש שהוגדרו ב-TJ30: קוד מקוצר (TXT04) ותיאור ארוך (TXT30) "
+  "לפי שפה (SPRAS). ל-CBC: מאפשר תצוגת סטטוסים בעברית ובאנגלית לפי שפת המשתמש, וחיוני לדוחות דו-לשוניים "
+  "ולממשקי Fiori.",
+  "טקסט סטטוס = Status Text\nקוד מקוצר = Short Code (TXT04)\nתיאור ארוך = Long Text (TXT30)\nשפה = Language Key",
+  HELP_PM, "SAP Help - Status Texts", COMM_EAM, "SAP Community EAM"),
+ ("BUT000 - שותף עסקי (Business Partner / Partner Profiles)", "BP; (ECC: XK01/MK01)",
+  "ב-S/4HANA ספקי שירותי האחזקה (קבלני משנה) מנוהלים כ-Business Partner (BP) במקום רשומת ספק קלאסית. "
+  "נדרש CVI (Customer/Vendor Integration) להמרת LFA1 ל-BUT000 לפני/במהלך ההמרה. נתיב: tcode BP. ל-CBC: "
+  "כל קבלן אחזקה חיצוני בפק\"ע (פעולת PM02) חייב BP פעיל עם תפקיד ספק (FLVN00/FLVN01); היעדר CVI יכשיל "
+  "את ה-Pre-Check של SUM. ראה SAP Note 2265093 (S4TWL - Business Partner Approach).",
+  "שותף עסקי = Business Partner\nתפקיד BP = BP Role\nקבוצת שותף = BP Grouping\nאינטגרציית ספק = CVI",
+  NOTE(2265093), "SAP Note 2265093 (BP)", SIC_CAT, "Simplification Item Catalog"),
+]
+cfg = new_sheet(CFG, SLATE)
+add_back_button(cfg, 7, "Config Guide  -  מדריך קונפיגורציה אנציקלופדי (SPRO)  ·  CBC NEO")
+cfg_cols = [("מס' (#)", 5), ("אובייקט קונפיגורציה (Object)", 30), ("טרנזקציה (SPRO/T-code)", 18),
+            ("הסבר פונקציונלי בעברית (Configuration Guide)", 64),
+            ("תרגום מונחים (HE = EN)", 36), ("SAP Help / Knowledge", 20), ("Note / SIC / Fiori", 22)]
+grid_header(cfg, cfg_cols, SLATE)
+rr = 3
+for i, (obj, tcode, guide, term, hurl, hlbl, eurl, elbl) in enumerate(CONFIG_GUIDE, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    for j, v in enumerate([i, obj, tcode, guide, term], start=1):
+        c = cfg.cell(rr, j, v)
+        c.font = Font(name=FONT_NAME, bold=(j == 2), size=10, color=RED if j == 2 else INK)
+        c.alignment = Alignment(horizontal=("center" if j == 1 else ("left" if j == 3 else "right")),
+                                vertical="top", wrap_text=True)
+        c.border = BORDER
+        if band: c.fill = PatternFill("solid", fgColor=band)
+    for col, url, lbl in ((6, hurl, hlbl), (7, eurl, elbl)):
+        lc = cfg.cell(rr, col, lbl)
+        lc.hyperlink = url
+        lc.font = Font(name=FONT_NAME, bold=True, color="0563C1", underline="single", size=9)
+        lc.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        lc.border = BORDER
+        if band: lc.fill = PatternFill("solid", fgColor=band)
+    cfg.row_dimensions[rr].height = 118
+    index_rows.append(("Config", obj.split(" - ")[0], obj, "", CFG, f"A{rr}"))
+    rr += 1
+
 # ---- pandas index frame (drives both the FILTER formula and the macro) ----
 df_index = pd.DataFrame(index_rows, columns=["סוג", "קוד", "עברית", "English", "גיליון", "תא"])
 N = len(df_index)
@@ -675,7 +752,7 @@ dash.sheet_properties.tabColor = DASH_HDR
 for col, w in zip("ABCDEFGHIJKLMNO", [3,16,16,16,16,16,4,16,16,3,3,3,3,3,3]):
     dash.column_dimensions[col].width = w
 # soft-grey dashboard backdrop
-for rfill in range(1, 63):
+for rfill in range(1, 66):
     for cfill in range(1, 16):
         dash.cell(rfill, cfill).fill = PatternFill("solid", fgColor=DASH_BG)
 
@@ -746,6 +823,7 @@ nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, SILVER))
 nav_items.append(("◆ " + COCKPIT, COCKPIT, RED))
 nav_items.append(("⚙ " + CCC, CCC, SLATE))
 nav_items.append(("⇄ " + ER, ER, RED))
+nav_items.append(("📖 " + CFG, CFG, SILVER))
 r = 10
 for i, (title, sn, hdr) in enumerate(nav_items):
     slot = i % 4
@@ -766,25 +844,25 @@ lg.font = Font(name=FONT_NAME, italic=True, size=9, color="64748B"); lg.alignmen
 lg.fill = PatternFill("solid", fgColor=DASH_BG)
 
 # --- search block (row 24 header, row 25 box) ---
-dash.merge_cells("B24:F24")
-sh = dash.cell(24, 2, "🔍 חיפוש גלובלי  (טבלה / טרנזקציה / שדה / פונקציה - עברית או אנגלית)")
+dash.merge_cells("B27:F27")
+sh = dash.cell(27, 2, "🔍 חיפוש גלובלי  (טבלה / טרנזקציה / שדה / פונקציה - עברית או אנגלית)")
 sh.font = Font(bold=True, size=12, color="FFFFFF"); sh.fill = PatternFill("solid", fgColor=SLATE)
 sh.alignment = Alignment(horizontal="right")
-lbl = dash.cell(25, 2, "הקלד כאן:")
+lbl = dash.cell(28, 2, "הקלד כאן:")
 lbl.font = Font(bold=True, size=11); lbl.alignment = Alignment(horizontal="right")
 lbl.fill = PatternFill("solid", fgColor=DASH_BG)
-dash.merge_cells("C25:F25")
-sc = dash.cell(25, 3, "")
+dash.merge_cells("C28:F28")
+sc = dash.cell(28, 3, "")
 sc.fill = PatternFill("solid", fgColor="FCE4E6")
 sc.font = Font(bold=True, size=12, color=SLATE)
 med = Side(style="medium", color=RED_HOT)
 sc.border = Border(left=med, right=med, top=med, bottom=med)
-dash.row_dimensions[25].height = 26
+dash.row_dimensions[28].height = 26
 
 # results header (row 27) + FILTER (row 28, spills) - reads the on-sheet index block
 res_hdrs = ["קישור", "קוד / שם טכני", "פירוש בעברית", "English", "גיליון", "תא"]
 for j, h in enumerate(res_hdrs):
-    c = dash.cell(27, 2 + j, h)
+    c = dash.cell(30, 2 + j, h)
     c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=SLATE)
     c.alignment = Alignment(horizontal="center"); c.border = BORDER
 
@@ -797,7 +875,7 @@ formula = (
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(3)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(0)})))>0),'
  f'"לא נמצאו תוצאות - נסה מונח אחר"))'
 )
-fcell = dash.cell(28, 2, formula)
+fcell = dash.cell(31, 2, formula)
 fcell.font = Font(size=10); fcell.alignment = Alignment(horizontal="right")
 
 # --- embedded INDEX_DB block on the dashboard (hidden cols P:V) ---
@@ -825,8 +903,8 @@ for k in range(7):
     dash.column_dimensions[get_column_letter(IDX_COL0 + k)].hidden = True   # hide the index block
 
 # instructions / note
-dash.merge_cells("B56:H60")
-note = dash.cell(56, 2,
+dash.merge_cells("B58:H62")
+note = dash.cell(58, 2,
   "איך עובדים:  1) לחץ כרטיס למעבר לגיליון (כולל Cockpit מעקב מיגרציה ו-Custom Code Check).  "
   "2) הקלד מונח בתא הצהוב - התוצאות הדינמיות (FILTER) יופיעו מיד עם קישור לחיץ לשורה.  "
   "3) בכל גיליון יש כפתור 'חזרה למסך הראשי' בפינה הימנית-עליונה (קישור Hyperlink).  "
@@ -860,7 +938,7 @@ for sh in wb.worksheets:
     sh.page_margins = PageMargins(left=0.3, right=0.3, top=0.7, bottom=0.6, header=0.3, footer=0.3)
     # explicit branded print area (keeps the dashboard PDF clean - excludes hidden index P:V)
     if sh.title == DASH:
-        sh.print_area = "A1:O60"
+        sh.print_area = "A1:O64"
     elif sh.title == COCKPIT:
         sh.print_area = f"A1:L{sh.max_row}"
         sh.print_title_rows = "1:2"
