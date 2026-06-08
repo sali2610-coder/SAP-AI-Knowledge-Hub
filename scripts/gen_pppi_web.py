@@ -13,7 +13,7 @@ to localStorage. Run: python3 scripts/gen_pppi_web.py -> index_pppi.html
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pppi_data import TOPICS, OPS, PPVS
+from pppi_data import TOPICS, OPS, PPVS, table_funcs, table_progs
 
 topics, cockpit, joins = [], [], []
 for ti, t in enumerate(TOPICS):
@@ -23,6 +23,7 @@ for ti, t in enumerate(TOPICS):
             "name": tb["name"], "he": tb["he"], "en": tb["en"], "tcodes": tb["tcodes"],
             "join": tb["join"], "guide": tb["guide"], "s4": tb["s4"],
             "help_url": tb["help"][0], "help_lbl": tb["help"][1],
+            "funcs": table_funcs(tb["name"], t["theme"]), "progs": table_progs(tb["name"], t["theme"]),
             "fields": [{"tech": f[0], "en": f[1], "he": f[2], "dt": f[3], "len": f[4], "key": f[5]} for f in tb["fields"]],
         })
         cockpit.append({"table": tb["name"], "he": tb["he"], "topic": t["title"]})
@@ -83,7 +84,7 @@ HTML = r"""<!DOCTYPE html>
    <header class="text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow" style="background:#D62027">
      <button class="md:hidden text-2xl" onclick="document.getElementById('side').classList.toggle('translate-x-full')">☰</button>
      <h1 id="hdr" class="font-extrabold text-lg truncate">Migration Cockpit &amp; Blueprint</h1>
-     <div class="text-xs bg-white/15 px-2 py-1 rounded font-bold hidden sm:block">65 טבלאות &middot; PP-PI &middot; JOIN ON</div>
+     <div class="text-xs bg-white/15 px-2 py-1 rounded font-bold hidden sm:block">68 טבלאות &middot; PP-PI &middot; JOIN ON</div>
    </header>
    <main id="main" class="p-3 md:p-6 max-w-full"></main>
    <footer class="text-center text-xs text-slate-400 py-6">SAP PP-PI Migration Blueprint Portal &middot; CBC Israel (Project NEO)</footer>
@@ -131,6 +132,10 @@ function opsBlock(ops){
 function blueprint(tb){
  const rows=tb.fields.map(f=>`<tr><td data-label="שדה טכני"><b style="color:#D62027">${esc(f.tech)}</b></td><td data-label="Type">${esc(f.dt)}</td><td data-label="Len">${esc(f.len)}</td><td data-label="Key">${keyBadge(f.key)}</td><td data-label="English">${esc(f.en)}</td><td data-label="עברית">${esc(f.he)}</td></tr>`).join("");
  return `<div class="overflow-x-auto mb-3"><table class="resp"><thead><tr><th>שדה טכני</th><th>Type</th><th>Len</th><th>Key</th><th>English</th><th>עברית</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="grid md:grid-cols-2 gap-3 text-xs mb-3">
+     <div><b style="color:#1E1E24">פונקציות / BAPIs:</b>${tb.funcs.map(x=>`<div><code>${esc(x[0])}</code> - ${esc(x[1])}</div>`).join("")}</div>
+     <div><b style="color:#1E1E24">תוכניות / דוחות:</b>${tb.progs.map(x=>`<div><code>${esc(x[0])}</code> - ${esc(x[1])}</div>`).join("")}</div>
+   </div>
    <div class="grid md:grid-cols-2 gap-3 text-xs mb-2">
      <div><b style="color:#1E1E24">JOIN ON (SQL/CDS):</b><br><code>${esc(tb.join)}</code></div>
      <div style="background:#FBF1E6;border-radius:8px;padding:8px"><b style="color:#9A5A23">פער / הערת S/4HANA:</b><br>${esc(tb.s4)}</div>

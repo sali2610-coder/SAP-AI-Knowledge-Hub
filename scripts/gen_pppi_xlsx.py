@@ -18,7 +18,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.utils import get_column_letter
-from pppi_data import TOPICS, OPS, PPVS
+from pppi_data import TOPICS, OPS, PPVS, table_funcs, table_progs
 
 # ---- CBC brand palette ----
 FONT = "Segoe UI"; RED = "D62027"; REDHOT = "F40009"; SLATE = "1E1E24"; SLATE2 = "2B2B33"
@@ -30,11 +30,11 @@ DASH = "מסך ניווט מרכזי"; COCKPIT = "Cockpit מעקב מיגרצי�
 SEARCH_CELL = "C25"; IDX0 = 14
 thin = Side(style="thin", color=GRID); BORDER = Border(thin, thin, thin, thin)
 
-COLS = [("מס' (#)", 5), ("טבלה (Table)", 12), ("שדה טכני (Field)", 16), ("סוג נתונים (Type)", 12),
-        ("אורך (Len)", 8), ("מפתח (Key)", 9), ("English Term", 24), ("תרגום עברי (Hebrew)", 26),
-        ("JOIN ON (SQL / CDS)", 40), ("הסבר פונקציונלי בעברית", 46), ("פער / הערת S/4HANA", 30),
-        ("SAP Help", 16)]
-NCOL = len(COLS); S4_COL = 11
+COLS = [("מס' (#)", 5), ("טבלה (Table)", 11), ("שדה טכני (Field)", 15), ("סוג נתונים (Type)", 11),
+        ("אורך (Len)", 7), ("מפתח (Key)", 8), ("English Term", 22), ("תרגום עברי (Hebrew)", 24),
+        ("פונקציות / BAPIs", 30), ("תוכניות / דוחות", 26),
+        ("JOIN ON (SQL / CDS)", 38), ("הסבר פונקציונלי בעברית", 42), ("פער / הערת S/4HANA", 28), ("SAP Help", 15)]
+NCOL = len(COLS); S4_COL = 13
 KEYFILL = {"PK": ("FCE4E6", "B01722"), "FK": ("ECEFF1", "37474F"), "PK/FK": ("FBE3E4", "D62027"), "-": ("F3F4F6", "9AA3AF")}
 
 MACRO_SRC = (
@@ -92,7 +92,7 @@ def render_ops(ws, ops, row, sname):
     subhdr("מיפוי T-code ◄► Fiori App (ECC ◄► S/4HANA)")
     merged_row(ws, row, [(1, 3, "ECC T-code", True, "center", "FFFFFF", False, None),
                          (4, 8, "S/4HANA Fiori App", True, "center", "FFFFFF", False, None),
-                         (9, 12, "Fiori ID", True, "center", "FFFFFF", False, None)])
+                         (9, NCOL, "Fiori ID", True, "center", "FFFFFF", False, None)])
     for s in (ws.cell(row, 1), ws.cell(row, 4), ws.cell(row, 9)): s.fill = PatternFill("solid", fgColor=SILVER)
     for s in (ws.cell(row, 1), ws.cell(row, 4), ws.cell(row, 9)): s.font = f(9, True, SILVER_TX)
     row += 1
@@ -100,7 +100,7 @@ def render_ops(ws, ops, row, sname):
         lk = fiori_url(fid)
         merged_row(ws, row, [(1, 3, ecc, True, "left", RED, True, None),
                              (4, 8, app, False, "right", INK, False, None),
-                             (9, 12, fid, True, "center", SLATE, False, lk)])
+                             (9, NCOL, fid, True, "center", SLATE, False, lk)])
         index_rows.append(("טרנזקציה", ecc.split()[0], app, fid, sname, f"A{row}"))
         if fid and fid != "-": index_rows.append(("Fiori", fid, app, "", sname, f"A{row}"))
         row += 1
@@ -108,23 +108,23 @@ def render_ops(ws, ops, row, sname):
     subhdr("ממשקים ובלוקים פונקציונליים: BAPIs / IDocs / RFCs (Extraction & Messaging)")
     merged_row(ws, row, [(1, 2, "Type", True, "center", "FFFFFF", False, None),
                          (3, 6, "Name", True, "center", "FFFFFF", False, None),
-                         (7, 12, "תיאור / Description", True, "center", "FFFFFF", False, None)])
+                         (7, NCOL, "תיאור / Description", True, "center", "FFFFFF", False, None)])
     for cc in (1, 3, 7): ws.cell(row, cc).fill = PatternFill("solid", fgColor=SILVER); ws.cell(row, cc).font = f(9, True, SILVER_TX)
     row += 1
     for kind, name, desc in ops["interfaces"]:
         merged_row(ws, row, [(1, 2, kind, True, "center", RED, False, None),
                              (3, 6, name, True, "left", SLATE, True, None),
-                             (7, 12, desc, False, "right", INK, False, None)])
+                             (7, NCOL, desc, False, "right", INK, False, None)])
         index_rows.append((kind, name, desc, "", sname, f"A{row}")); row += 1
     # ---- Background programs ----
     subhdr("תוכניות רקע ודוחות סטנדרטיים (Background Programs / Reports)")
     merged_row(ws, row, [(1, 4, "Program / Report", True, "center", "FFFFFF", False, None),
-                         (5, 12, "תיאור ומטרה / Usage & Trigger", True, "center", "FFFFFF", False, None)])
+                         (5, NCOL, "תיאור ומטרה / Usage & Trigger", True, "center", "FFFFFF", False, None)])
     for cc in (1, 5): ws.cell(row, cc).fill = PatternFill("solid", fgColor=SILVER); ws.cell(row, cc).font = f(9, True, SILVER_TX)
     row += 1
     for name, desc in ops["programs"]:
         merged_row(ws, row, [(1, 4, name, True, "left", SLATE, True, None),
-                             (5, 12, desc, False, "right", INK, False, None)])
+                             (5, NCOL, desc, False, "right", INK, False, None)])
         index_rows.append(("תוכנית", name, desc, "", sname, f"A{row}")); row += 1
     return row + 1
 
@@ -186,7 +186,7 @@ for topic, sname, ops in zip(TOPICS, sheet_names, OPS):
             kf = KEYFILL[key]; kc = sc(6, key, bold=(key != "-"), color=kf[1], h="center")
             kc.fill = PatternFill("solid", fgColor=kf[0])
             sc(7, en, h="left"); sc(8, he, h="right")
-            for col in (9, 10, 11, 12): sc(col, "", fill=(S4_BAND if (col >= S4_COL and band) else band))
+            for col in (9, 10, 11, 12, 13, 14): sc(col, "", fill=(S4_BAND if (col >= S4_COL and band) else band))
             ws.row_dimensions[row].height = 26
             index_rows.append(("שדה", tech, he, en, sname, f"C{row}"))
             row += 1
@@ -198,11 +198,16 @@ for topic, sname, ops in zip(TOPICS, sheet_names, OPS):
             c.alignment = Alignment(horizontal=h, vertical="top", wrap_text=True); c.border = BORDER
             if link: c.hyperlink = link
             if fend > fstart: ws.merge_cells(start_row=fstart, start_column=col, end_row=fend, end_column=col)
+        _fn = table_funcs(tb["name"], topic["theme"]); _pg = table_progs(tb["name"], topic["theme"])
         vm(2, tb["name"], bold=True, color=RED, h="center")
-        vm(9, tb["join"], mono=True, color="0B5394", h="left")
-        vm(10, tb["guide"])
-        vm(11, tb["s4"], color="9A5A23")
-        vm(12, tb["help"][1], color="0563C1", link=tb["help"][0], h="center")
+        vm(9, "\n".join(f"• {n} - {d}" for n, d in _fn), bold=True, color=SLATE)
+        vm(10, "\n".join(f"• {n} - {d}" for n, d in _pg), bold=True, color=SLATE)
+        vm(11, tb["join"], mono=True, color="0B5394", h="left")
+        vm(12, tb["guide"])
+        vm(13, tb["s4"], color="9A5A23")
+        vm(14, tb["help"][1], color="0563C1", link=tb["help"][0], h="center")
+        for n, d in _fn: index_rows.append(("פונקציה", n, d, tb["en"], sname, f"A{fstart}"))
+        for n, d in _pg: index_rows.append(("תוכנית", n, d, tb["en"], sname, f"A{fstart}"))
         for code in [x.strip() for x in tb["tcodes"].replace(";", ",").replace("/", ",").split(",") if x.strip()]:
             index_rows.append(("טרנזקציה", code, tb["he"], tb["en"], sname, f"A{fstart}"))
         row += 1
