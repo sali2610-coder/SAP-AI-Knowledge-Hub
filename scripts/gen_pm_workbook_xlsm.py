@@ -824,7 +824,14 @@ for sh in wb.worksheets:
     sh.print_options.horizontalCentered = True
     sh.print_options.gridLines = False
     sh.page_margins = PageMargins(left=0.3, right=0.3, top=0.7, bottom=0.6, header=0.3, footer=0.3)
-    if sh.title != DASH:
+    # explicit branded print area (keeps the dashboard PDF clean - excludes hidden index P:V)
+    if sh.title == DASH:
+        sh.print_area = "A1:O60"
+    elif sh.title == COCKPIT:
+        sh.print_area = f"A1:L{sh.max_row}"
+        sh.print_title_rows = "1:2"
+    else:
+        sh.print_area = f"A1:{get_column_letter(sh.max_column)}{sh.max_row}"
         sh.print_title_rows = "1:2"          # repeat title + column headers on every page
 
 # ---------------------------------------------------------------------------
