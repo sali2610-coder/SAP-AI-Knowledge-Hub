@@ -142,154 +142,6 @@ MACRO_SRC = (
 )
 
 # ===========================================================================
-# 2) vbaProject.bin generator  (MS-OVBA compression + MS-CFB container)
-# ===========================================================================
-def _compress_chunk(data):
-    out = bytearray(); i = 0
-    while i < len(data):
-        out.append(0x00); out.extend(data[i:i+8]); i += 8
-    return bytes(out)
-
-def ovba_compress(data):
-    res = bytearray([0x01]); CHUNK = 2048
-    for off in range(0, len(data), CHUNK):
-        comp = _compress_chunk(data[off:off+CHUNK])
-        header = ((len(comp) + 2 - 3) & 0x0FFF) | (0b011 << 12) | (1 << 15)
-        res += struct.pack('<H', header) + comp
-    return bytes(res)
-
-def _rec(rid, data): return struct.pack('<HI', rid, len(data)) + data
-
-def build_dir_stream(mn):
-    m = mn.encode('latin-1')
-    s = bytearray()
-    s += _rec(0x0001, struct.pack('<I', 1))                # SYSKIND win32
-    s += _rec(0x0002, struct.pack('<I', 0x409))            # LCID
-    s += _rec(0x0014, struct.pack('<I', 0x409))            # LCIDINVOKE
-    s += _rec(0x0003, struct.pack('<H', 1255))             # CODEPAGE (Hebrew - matches macro text)
-    s += _rec(0x0004, b'VBAProject')                       # PROJECTNAME
-    s += struct.pack('<HI', 0x0005, 0)                     # DOCSTRING
-    s += struct.pack('<HI', 0x0040, 0)
-    s += struct.pack('<HI', 0x0006, 0)                     # HELPFILEPATH
-    s += struct.pack('<HI', 0x003D, 0)
-    s += _rec(0x0007, struct.pack('<I', 0))                # HELPCONTEXT
-    s += _rec(0x0008, struct.pack('<I', 0))                # LIBFLAGS
-    s += struct.pack('<HIIH', 0x0009, 4, 0x00030003, 0)    # VERSION
-    s += _rec(0x000C, b'')                                 # CONSTANTS
-    s += _rec(0x000F, struct.pack('<H', 1))                # MODULES count
-    s += _rec(0x0013, struct.pack('<H', 0xFFFF))           # COOKIE
-    s += _rec(0x0019, m)                                   # MODULENAME
-    s += _rec(0x0047, m)                                   # MODULENAMEUNICODE
-    s += _rec(0x001A, m)                                   # MODULESTREAMNAME
-    s += struct.pack('<HI', 0x0032, len(m)) + m            # streamname reserved
-    s += _rec(0x001C, b'')                                 # MODULEDOCSTRING
-    s += struct.pack('<HI', 0x0048, 0)
-    s += _rec(0x0031, struct.pack('<I', 0))                # MODULEOFFSET = 0
-    s += _rec(0x001E, struct.pack('<I', 0))                # HELPCONTEXT
-    s += _rec(0x002C, struct.pack('<H', 0xFFFF))           # COOKIE
-    s += struct.pack('<HI', 0x0021, 0)                     # MODULETYPE procedural
-    s += _rec(0x002B, b'')                                 # MODULE terminator
-    s += struct.pack('<HI', 0x0010, 0)                     # TERMINATOR
-    return bytes(s)
-
-FREESECT, ENDOFCHAIN, FATSECT = 0xFFFFFFFF, 0xFFFFFFFE, 0xFFFFFFFD
-SECTOR = 512
-
-def _dir_entry(name, etype, color, left, right, child, start, size):
-    nb = name.encode('utf-16-le')[:62]
-    namelen = (len(nb) + 2) if name else 0
-    nb = nb + b'\x00' * (64 - len(nb))
-    e = nb + struct.pack('<H', namelen) + struct.pack('<BB', etype, color)
-    e += struct.pack('<iii', left, right, child) + b'\x00' * 16
-    e += struct.pack('<I', 0) + b'\x00' * 16
-    e += struct.pack('<I', start & 0xFFFFFFFF) + struct.pack('<Q', size)
-    return e
-
-def write_cfb(entries):
-    import math
-    MINISEC = 64
-    mini = [e for e in entries if e['type'] == 2 and len(e['data']) < 4096]
-    big  = [e for e in entries if e['type'] == 2 and len(e['data']) >= 4096]
-    mini_fat, mini_stream = [], bytearray()
-    for e in mini:
-        d = e['data']; nsec = max(1, (len(d) + MINISEC - 1) // MINISEC)
-        e['start'] = len(mini_fat)
-        for k in range(nsec): mini_fat.append(e['start'] + k + 1)
-        mini_fat[e['start'] + nsec - 1] = ENDOFCHAIN
-        mini_stream += d
-        if len(mini_stream) % MINISEC:
-            mini_stream += b'\x00' * (MINISEC - len(mini_stream) % MINISEC)
-    sectors, fat = [], []
-    def alloc(data):
-        if not data: return ENDOFCHAIN
-        start = len(sectors); n = (len(data) + SECTOR - 1) // SECTOR
-        for k in range(n):
-            ch = data[k*SECTOR:(k+1)*SECTOR]
-            sectors.append(ch + b'\x00' * (SECTOR - len(ch))); fat.append(start + k + 1)
-        fat[-1] = ENDOFCHAIN; return start
-    for e in big: e['start'] = alloc(e['data'])
-    mini_start = alloc(bytes(mini_stream)) if mini_stream else ENDOFCHAIN
-    for e in entries:
-        if e['type'] == 5:
-            e['start'] = mini_start; e['mini_size'] = len(mini_stream)
-    mfat = b''.join(struct.pack('<I', x) for x in mini_fat)
-    minifat_start = alloc(mfat) if mfat else ENDOFCHAIN
-    minifat_nsec = (len(mfat) + SECTOR - 1) // SECTOR if mfat else 0
-    db = bytearray()
-    for e in entries:
-        sz = e.get('mini_size', 0) if e['type'] == 5 else (len(e['data']) if e['type'] == 2 else 0)
-        db += _dir_entry(e['name'], e['type'], e['color'], e['left'], e['right'],
-                         e['child'], e.get('start', ENDOFCHAIN), sz)
-    empty = _dir_entry('', 0, 0, -1, -1, -1, ENDOFCHAIN, 0)
-    while len(db) % SECTOR: db += empty
-    dir_start = alloc(bytes(db))
-    nfat = 1
-    while True:
-        total = len(sectors) + nfat
-        need = math.ceil(total * 4 / SECTOR)
-        if need == nfat: break
-        nfat = need
-    fat_start = len(sectors)
-    for k in range(nfat): sectors.append(b''); fat.append(FATSECT)
-    while len(fat) < len(sectors): fat.append(FREESECT)
-    fb = b''.join(struct.pack('<I', x) for x in fat)
-    fb += b'\xFF' * ((SECTOR - len(fb) % SECTOR) % SECTOR)
-    for k in range(nfat): sectors[fat_start + k] = fb[k*SECTOR:(k+1)*SECTOR]
-    difat = [fat_start + k for k in range(nfat)] + [FREESECT] * (109 - nfat)
-    h = bytearray(bytes.fromhex('D0CF11E0A1B11AE1') + b'\x00' * 16)
-    h += struct.pack('<HHH', 0x003E, 0x0003, 0xFFFE)
-    h += struct.pack('<HH', 9, 6) + b'\x00' * 6
-    h += struct.pack('<IIII', 0, nfat, dir_start, 0)
-    h += struct.pack('<III', 0x00001000, minifat_start, minifat_nsec)
-    h += struct.pack('<II', ENDOFCHAIN, 0)
-    for d in difat: h += struct.pack('<I', d)
-    return bytes(h) + b''.join(sectors)
-
-def make_vbaproject_bin(macro_src, mn='modPM'):
-    dir_comp = ovba_compress(build_dir_stream(mn))
-    vbaproj  = struct.pack('<HHH', 0x61CC, 0xFFFF, 0x0000) + b'\x00' * 2
-    module   = ovba_compress(macro_src.replace('\n', '\r\n').encode('cp1255', 'replace'))
-    proj = (
-        'ID="{00000000-0000-0000-0000-000000000000}"\r\n'
-        f'Module={mn}\r\nName="VBAProject"\r\nHelpContextID="0"\r\n'
-        'VersionCompatible32="393222000"\r\n'
-        'CMG="0000000000000000000000000000"\r\nDPB="0000000000000000000000000000"\r\n'
-        'GC="0000000000000000000000000000"\r\n\r\n[Host Extender Info]\r\n'
-        '&H00000001={3832D640-CF90-11CF-8E43-00A0C911005A};VBE;&H00000000\r\n\r\n'
-        f'[Workspace]\r\n{mn}=0, 0, 0, 0, C\r\n').encode('latin-1', 'replace')
-    pwm = mn.encode('latin-1') + b'\x00' + mn.encode('latin-1') + b'\x00\x00\x00'
-    entries = [
-        dict(name='Root Entry', type=5, color=1, left=-1, right=-1, child=2, data=b''),
-        dict(name='VBA', type=1, color=1, left=-1, right=-1, child=6, data=b''),
-        dict(name='PROJECT', type=2, color=1, left=1, right=3, child=-1, data=proj),
-        dict(name='PROJECTwm', type=2, color=1, left=-1, right=-1, child=-1, data=pwm),
-        dict(name='dir', type=2, color=1, left=-1, right=5, child=-1, data=dir_comp),
-        dict(name='_VBA_PROJECT', type=2, color=1, left=-1, right=-1, child=-1, data=vbaproj),
-        dict(name='modPM', type=2, color=1, left=4, right=-1, child=-1, data=module),
-    ]
-    return write_cfb(entries)
-
-# ===========================================================================
 # 3) Build the workbook with openpyxl
 # ===========================================================================
 def style(c, *, bold=False, color=INK, fill=None, v="center", size=10, wrap=True, h="right"):
@@ -758,7 +610,7 @@ for j, h in enumerate(res_hdrs):
 C = lambda k: get_column_letter(IDX_COL0 + k)         # P,Q,R,S,T,U,V
 rng = lambda k: f"${C(k)}$2:${C(k)}${N+1}"
 formula = (
- f'=IF({SEARCH_CELL}="","הקלד מונח וראה תוצאות, או לחץ על כפתור החיפוש...",'
+ f'=IF({SEARCH_CELL}="","הקלד מונח בתא הצהוב למעלה - והתוצאות יופיעו כאן מיד (כולל קישור לחיץ)...",'
  f'IFERROR(FILTER(CHOOSE({{1,2,3,4,5,6}},{rng(6)},{rng(1)},{rng(2)},{rng(3)},{rng(4)},{rng(5)}),'
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(1)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(2)})))+'
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(3)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(0)})))>0),'
@@ -795,10 +647,11 @@ for k in range(7):
 dash.merge_cells("B56:H60")
 note = dash.cell(56, 2,
   "איך עובדים:  1) לחץ כרטיס למעבר לגיליון (כולל Cockpit מעקב מיגרציה ו-Custom Code Check).  "
-  "2) הקלד מונח בתא הצהוב ולחץ על כפתור 'חיפוש' (מאקרו) או צפה בתוצאות הדינמיות מתחת (FILTER).  "
-  "3) בכל גיליון יש כפתור 'חזרה למסך הראשי' בפינה הימנית-עליונה.  "
+  "2) הקלד מונח בתא הצהוב - התוצאות הדינמיות (FILTER) יופיעו מיד עם קישור לחיץ לשורה.  "
+  "3) בכל גיליון יש כפתור 'חזרה למסך הראשי' בפינה הימנית-עליונה (קישור Hyperlink).  "
   "ב-Cockpit וב-Custom Code Check יש עמודות סטטוס עם רשימה נפתחת וצביעה אוטומטית.  "
-  "אם Excel חוסם מאקרו - אשר 'Enable Content'; אם נדרש, ייבא את modPM.bas (Alt+F11 -> Import).")
+  "קובץ זה הוא .xlsx נקי (ללא מאקרו) - בטוח למייל ארגוני. להוספת כפתור חיפוש-מאקרו: הדבק את modPM.bas "
+  "דרך Alt+F11 ושמור כ-.xlsm (הוראות מצורפות).")
 note.font = Font(name=FONT_NAME, italic=True, size=9, color="475569")
 note.alignment = Alignment(horizontal="right", vertical="top", wrap_text=True)
 note.fill = PatternFill("solid", fgColor="F1F3F5")
@@ -846,118 +699,16 @@ for sh in wb.worksheets:
                                  italic=ftn.italic, color=ftn.color, underline=ftn.underline)
 
 # ===========================================================================
-# 5) Save .xlsx then inject VBA + Form Control button -> .xlsm
+# 5) Save a CLEAN .xlsx  (no binary VBA injection - safe for corporate email)
 # ===========================================================================
-TMP_XLSX = "_tmp_pm.xlsx"
-OUT = "SAP_PM_ECC6_to_S4_Migration.xlsm"
-wb.save(TMP_XLSX)
+OUT = "SAP_PM_ECC6_to_S4_Migration.xlsx"
+wb.save(OUT)
 
-with open("modPM.bas", "w", encoding="utf-8") as f:        # fallback export
+# Export the VBA macro source as plain text for manual paste (Alt+F11)
+with open("modPM.bas", "w", encoding="utf-8") as f:
     f.write(MACRO_SRC)
 
-vba_bin = make_vbaproject_bin(MACRO_SRC)
-
-# VML form-control button wired to PM_GlobalSearch (anchored next to the search box)
-VML = (
-'<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" '
-'xmlns:x="urn:schemas-microsoft-com:office:excel">'
-'<o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout>'
-'<v:shapetype id="_x0000_t201" coordsize="21600,21600" o:spt="201" path="m,l,21600r21600,l21600,xe">'
-'<v:stroke joinstyle="miter"/><v:path shadowok="f" o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>'
-'</v:shapetype>'
-'<v:shape id="SearchBtn" type="#_x0000_t201" style="position:absolute;margin-left:300px;margin-top:495px;'
-'width:120px;height:30px;z-index:1" o:button="t" fillcolor="#c55a11" strokecolor="#7b1e2b">'
-'<v:fill o:detectmouseclick="t"/><o:lock v:ext="edit" rotation="t"/>'
-'<v:textbox style="mso-direction-alt:auto" o:singleclick="f">'
-'<div style="text-align:center"><font color="#FFFFFF" size="200" face="Arial"><b>\U0001F50D חיפוש</b></font></div>'
-'</v:textbox>'
-'<x:ClientData ObjectType="Button">'
-'<x:Anchor>6, 30, 23, 4, 7, 110, 24, 12</x:Anchor>'
-'<x:PrintObject>False</x:PrintObject><x:AutoFill>False</x:AutoFill>'
-'<x:FmlaMacro>PM_GlobalSearch</x:FmlaMacro>'
-'<x:TextHAlign>Center</x:TextHAlign><x:TextVAlign>Center</x:TextVAlign>'
-'</x:ClientData></v:shape></xml>'
-)
-
-def inject_macros(src_xlsx, out_xlsm, vba_bin, vml):
-    zin = zipfile.ZipFile(src_xlsx, "r")
-    names = zin.namelist()
-    ct = zin.read("[Content_Types].xml").decode("utf-8")
-    wbrels = zin.read("xl/_rels/workbook.xml.rels").decode("utf-8")
-    wbxml = zin.read("xl/workbook.xml").decode("utf-8")
-
-    # map dashboard sheet -> sheetN.xml via workbook.xml + rels (attribute-order agnostic)
-    sheet_el = re.search(r'<sheet\b[^>]*\bname="%s"[^>]*/?>' % re.escape(DASH), wbxml).group(0)
-    rid = re.search(r'r:id="([^"]+)"', sheet_el).group(1)
-    rel_el = re.search(r'<Relationship\b[^>]*\bId="%s"[^>]*/?>' % re.escape(rid), wbrels).group(0)
-    tgt = re.search(r'Target="([^"]+)"', rel_el).group(1)
-    if tgt.startswith("/"):
-        dash_part = tgt.lstrip("/")                      # absolute from package root
-    else:
-        dash_part = "xl/" + tgt.replace("../", "")       # relative to xl/
-    dash_base = os.path.basename(dash_part)
-    dash_rels = f"xl/worksheets/_rels/{dash_base}.rels"
-
-    # content types
-    ct = ct.replace(
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
-        'application/vnd.ms-excel.sheet.macroEnabled.main+xml')
-    inserts = ''
-    if 'Extension="vml"' not in ct:
-        inserts += '<Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/>'
-    if 'Extension="bin"' not in ct:
-        inserts += '<Default Extension="bin" ContentType="application/vnd.ms-office.vbaProject"/>'
-    ct = ct.replace('</Types>', inserts + '</Types>')
-
-    # workbook rels: add vbaProject relationship
-    if 'vbaProject.bin' not in wbrels:
-        wbrels = wbrels.replace('</Relationships>',
-            '<Relationship Id="rIdVbaProj" '
-            'Type="http://schemas.microsoft.com/office/2006/relationships/vbaProject" '
-            'Target="vbaProject.bin"/></Relationships>')
-
-    # dashboard worksheet xml: declare xmlns:r (openpyxl omits it) + add legacyDrawing ref
-    dash_xml = zin.read(dash_part).decode("utf-8")
-    if 'xmlns:r=' not in dash_xml[:400]:
-        dash_xml = dash_xml.replace(
-            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',
-            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
-            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"', 1)
-    if '<legacyDrawing' not in dash_xml:
-        dash_xml = dash_xml.replace('</worksheet>', '<legacyDrawing r:id="rIdVml"/></worksheet>')
-
-    # dashboard worksheet rels (create or extend)
-    if dash_rels in names:
-        dr = zin.read(dash_rels).decode("utf-8")
-        dr = dr.replace('</Relationships>',
-            '<Relationship Id="rIdVml" '
-            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" '
-            'Target="../drawings/vmlDrawing1.vml"/></Relationships>')
-    else:
-        dr = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-              '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-              '<Relationship Id="rIdVml" '
-              'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" '
-              'Target="../drawings/vmlDrawing1.vml"/></Relationships>')
-
-    zout = zipfile.ZipFile(out_xlsm, "w", zipfile.ZIP_DEFLATED)
-    written = set()
-    for item in zin.infolist():
-        n = item.filename
-        if n == "[Content_Types].xml": data = ct.encode("utf-8")
-        elif n == "xl/_rels/workbook.xml.rels": data = wbrels.encode("utf-8")
-        elif n == dash_part: data = dash_xml.encode("utf-8")
-        elif n == dash_rels: data = dr.encode("utf-8")
-        else: data = zin.read(n)
-        zout.writestr(item, data); written.add(n)
-    if dash_rels not in written: zout.writestr(dash_rels, dr)
-    zout.writestr("xl/vbaProject.bin", vba_bin)
-    zout.writestr("xl/drawings/vmlDrawing1.vml", vml.encode("utf-8"))
-    zout.close(); zin.close()
-
-inject_macros(TMP_XLSX, OUT, vba_bin, VML)
-os.remove(TMP_XLSX)
-print(f"OK -> {OUT}")
-print(f"   sheets: {len(TOPICS)+1} | tables: {sum(len(t['tables']) for t in TOPICS)} | "
+print(f"OK -> {OUT}  (clean .xlsx, no macros embedded)")
+print(f"   sheets: {len(TOPICS)+1+3} | tables: {sum(len(t['tables']) for t in TOPICS)} | "
       f"fields: {sum(len(tb['fields']) for t in TOPICS for tb in t['tables'])} | index rows: {N}")
-print("   fallback module exported -> modPM.bas")
+print("   VBA source exported as plain text -> modPM.bas (paste via Alt+F11, then save as .xlsm)")
