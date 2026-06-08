@@ -343,7 +343,7 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     ws.sheet_properties.tabColor = th["t"]
     ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
 
-    add_back_button(ws, NCOL, topic["title"] + "   |   ECC 6.0  ➜  S/4HANA")
+    add_back_button(ws, NCOL, topic["title"] + "   |   ECC 6.0 ➜ S/4HANA   ·   CBC NEO")
 
     for j, (lbl, w) in enumerate(COLS, start=1):
         is_s4 = j >= S4_COL_START
@@ -481,7 +481,7 @@ def grid_header(ws, cols, fill):
 
 # === Simplification Item list ===============================================
 simp = new_sheet(SIMP_SHEET, SILVER)
-add_back_button(simp, 6, "Simplification Item List  -  SAP Notes למיגרציית PM / EAM ל-S/4HANA")
+add_back_button(simp, 6, "Simplification Item List  -  SAP Notes  ·  CBC NEO")
 grid_header(simp, [("מס' (#)", 6), ("תחום / אובייקט", 20), ("Simplification Item (כותרת הפריט)", 42),
                    ("SAP Note", 16), ("קטגוריה", 18), ("השפעה והמלצה (Impact & Action)", 62)], SLATE)
 rr = 3
@@ -585,7 +585,7 @@ CCC_FILL = {"To review": "FCE4E6", "In progress": "ECEFF1", "Adapted": "DCE6EC",
 CCC_TXT = {"To review": "B01722", "In progress": "475569", "Adapted": "2A4A57",
            "OK - no change": "1E5A44", "Obsolete": "6B7280"}
 ccc = new_sheet(CCC, SILVER)
-add_back_button(ccc, 9, "Custom Code Check  -  בדיקת User Exits / BAdIs למעבר S/4HANA")
+add_back_button(ccc, 9, "Custom Code Check  -  User Exits / BAdIs  ·  CBC NEO")
 ccc_cols = [("מס' (#)", 6), ("מודול / נושא", 24), ("סוג (Type)", 16), ("קוד / שם טכני", 22),
             ("תיאור (Hebrew)", 34), ("סטטוס בדיקה", 16), ("המלצת מעבר ל-S/4", 30),
             ("אחראי (Owner)", 14), ("הערות", 22)]
@@ -640,11 +640,21 @@ for rfill in range(1, 63):
         dash.cell(rfill, cfill).fill = PatternFill("solid", fgColor=DASH_BG)
 
 dash.merge_cells("B2:H2")
-d1 = dash.cell(2, 2, "SAP PM  -  מסך ניווט מרכזי  |  גשר מעבר ECC 6.0 ➜ S/4HANA")
+d1 = dash.cell(2, 2, "CBC ISRAEL  |  SAP PM  -  מסך ניווט מרכזי")
 d1.font = Font(name=FONT_NAME, bold=True, size=18, color=DASH_HDR); d1.alignment = Alignment(horizontal="right")
 dash.merge_cells("B3:H3")
-d2 = dash.cell(3, 2, "Interactive Migration-Ready Workbook  -  Plant Maintenance / EAM")
+d2 = dash.cell(3, 2, "Project NEO  -  ECC 6.0 ➜ S/4HANA Migration  |  Plant Maintenance / EAM")
 d2.font = Font(name=FONT_NAME, bold=True, size=10, color="64748B"); d2.alignment = Alignment(horizontal="right")
+# NEO project badge (top-right)
+dash.merge_cells("J2:O3")
+neo = dash.cell(2, 10, "★ CBC ISRAEL\nProject NEO")
+neo.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF")
+neo.fill = PatternFill("solid", fgColor=RED)
+neo.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+neo_side = Side(style="thin", color="FFFFFF")
+for rrn in (2, 3):
+    for ccn in range(10, 16):
+        dash.cell(rrn, ccn).border = Border(left=neo_side, right=neo_side, top=neo_side, bottom=neo_side)
 
 # ---------------------------------------------------------------------------
 #  KPI strip (top) - live counts from the Cockpit status column
@@ -794,6 +804,28 @@ note.alignment = Alignment(horizontal="right", vertical="top", wrap_text=True)
 note.fill = PatternFill("solid", fgColor="F1F3F5")
 note.border = BORDER
 dash.freeze_panes = "A2"
+
+# ---------------------------------------------------------------------------
+#  Branded print setup - CBC / Project NEO header & footer band + page layout
+#  (appears at the top/bottom of every printed page / PDF export)
+# ---------------------------------------------------------------------------
+from openpyxl.worksheet.page import PageMargins
+for sh in wb.worksheets:
+    sh.oddHeader.left.text   = '&"Segoe UI,Bold"&13&KD62027CBC ISRAEL'
+    sh.oddHeader.center.text = '&"Segoe UI,Bold"&11&K1E1E24Project NEO  |  SAP PM  ECC 6.0 -> S/4HANA Migration'
+    sh.oddHeader.right.text  = '&"Segoe UI"&9&K6B7280&A'
+    sh.oddFooter.left.text   = '&"Segoe UI"&8&K6B7280SAP PM Migration Workbook  -  CBC Israel (Project NEO)'
+    sh.oddFooter.center.text = '&"Segoe UI"&8&K6B7280Page &P of &N'
+    sh.oddFooter.right.text  = '&"Segoe UI"&8&K6B7280&D'
+    sh.page_setup.orientation = "landscape"
+    sh.page_setup.fitToWidth = 1
+    sh.page_setup.fitToHeight = 0
+    sh.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
+    sh.print_options.horizontalCentered = True
+    sh.print_options.gridLines = False
+    sh.page_margins = PageMargins(left=0.3, right=0.3, top=0.7, bottom=0.6, header=0.3, footer=0.3)
+    if sh.title != DASH:
+        sh.print_title_rows = "1:2"          # repeat title + column headers on every page
 
 # ---------------------------------------------------------------------------
 #  Universal typography pass - apply the modern font family to every cell
