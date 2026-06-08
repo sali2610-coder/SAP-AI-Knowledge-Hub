@@ -323,9 +323,9 @@ dash.sheet_view.rightToLeft = True; dash.sheet_view.showGridLines = False; dash.
 for col, w in zip("ABCDEFGHIJKLM", [3, 16, 16, 16, 16, 16, 4, 16, 16, 3, 3, 3, 3]): dash.column_dimensions[col].width = w
 for r0 in range(1, 60):
     for c0 in range(1, 14): dash.cell(r0, c0).fill = PatternFill("solid", fgColor=DASH_BG)
-dash.merge_cells("B2:H2"); d1 = dash.cell(2, 2, "CBC ISRAEL  |  SAP PP-PI  -  מסך ניווט מרכזי")
+dash.merge_cells("B2:H2"); d1 = dash.cell(2, 2, "CBC ISRAEL  |  SAP PP-PI Migration Blueprint Portal")
 d1.font = f(18, True, RED); d1.alignment = Alignment(horizontal="right")
-dash.merge_cells("B3:H3"); d2 = dash.cell(3, 2, "Project NEO  -  Production Planning for Process Industries  |  ECC 6.0 ➜ S/4HANA")
+dash.merge_cells("B3:H3"); d2 = dash.cell(3, 2, "Project NEO  -  Migration Cockpit + Blueprint מאוחדים  |  PP-PI  ECC 6.0 ➜ S/4HANA")
 d2.font = f(10, True, "64748B"); d2.alignment = Alignment(horizontal="right")
 dash.merge_cells("J2:M3"); neo = dash.cell(2, 10, "★ CBC\nProject NEO"); neo.font = f(12, True, "FFFFFF")
 neo.fill = PatternFill("solid", fgColor=RED); neo.alignment = Alignment("center", "center", wrap_text=True)
@@ -333,7 +333,7 @@ CRC = f"'{COCKPIT}'"
 TOT = f"COUNTA({CRC}!$C${DS}:$C${co_last})"; DON = f'COUNTIF({CRC}!$D${DS}:$D${co_last},"Done")'
 TES = f'COUNTIF({CRC}!$D${DS}:$D${co_last},"Tested")'; OPN = f'COUNTIF({CRC}!$D${DS}:$D${co_last},"Not started")'
 PRG = f'(COUNTIF({CRC}!$D${DS}:$D${co_last},"In analysis")+COUNTIF({CRC}!$D${DS}:$D${co_last},"In conversion"))'
-dash.merge_cells("B5:H5"); kh = dash.cell(5, 2, "סיכום התקדמות מיגרציה (KPI - חי מה-Cockpit)")
+dash.merge_cells("B5:H5"); kh = dash.cell(5, 2, "🚀 Migration Cockpit - מצב פריסה חי (KPI מתעדכן מ-Cockpit; עדכן סטטוס בלשונית Cockpit, פתח Blueprint בלשוניות הזרמים)")
 kh.font = f(12, True, "FFFFFF"); kh.fill = PatternFill("solid", fgColor=RED); kh.alignment = Alignment(horizontal="right")
 kp = [("סה\"כ אובייקטים", f"={TOT}", SLATE, "ECEFF1"), ("הושלם", f"={DON}", "1E5A44", "DCEFE0"),
       ("נבדק", f"={TES}", "2A4A57", "DCE6EC"), ("בתהליך", f"={PRG}", "37474F", "E1E6EA"),
