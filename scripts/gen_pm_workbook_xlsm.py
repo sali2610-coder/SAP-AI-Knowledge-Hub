@@ -49,26 +49,33 @@ COCKPIT = "Cockpit מעקב מיגרציה"
 CCC = "Custom Code Check"
 
 # ---------------------------------------------------------------------------
-#  UI/UX DESIGN SYSTEM  (modern corporate palette + typography)
+#  UI/UX DESIGN SYSTEM - CBC Israel / Coca-Cola Red corporate brand identity
 # ---------------------------------------------------------------------------
 FONT_NAME = "Segoe UI"
-INK       = "1E293B"        # slate-800 body text
-HEB_INK   = "1E293B"
-GRID      = "E2E8F0"        # light-grey cell borders
-ZEBRA     = "F8FAFC"        # ultra-soft alternate row
-DASH_HDR  = "1B365D"        # Midnight Blue
-DASH_BG   = "F5F7FA"        # soft grey dashboard background
-BACK_BG   = "E2EBF4"        # back-button soft blue
-BACK_TXT  = "1B365D"
-S4_HDR    = "D97736"        # muted copper/amber - S/4HANA future-state signpost
-S4_BAND   = "FBF1E6"        # faint copper zebra for S/4 columns
+RED       = "D62027"        # CBC / Coca-Cola brand red - primary anchors & exec blocks
+RED_HOT   = "F40009"        # vibrant red accent (borders / highlights)
+SLATE     = "1E1E24"        # deep charcoal/slate - standard table headers
+SLATE2    = "2B2B33"        # lighter slate - sub-headers
+SILVER    = "8A9EA7"        # silver/platinum - S/4HANA migration columns
+SILVER_TX = "1E1E24"        # dark text on silver
+INK       = "1F2937"        # body text
+HEB_INK   = "1F2937"
+GRID      = "E5E7EB"        # light-grey cell borders
+ZEBRA     = "F9FAFB"        # ultra-soft alternate row
+DASH_HDR  = RED             # dashboard / executive summary header = brand red
+DASH_BG   = "F7F8FA"        # soft neutral dashboard background
+BACK_BG   = SLATE           # back-button dark slate background
+BACK_TXT  = "FFFFFF"        # white text
+S4_HDR    = SILVER          # S/4HANA columns - silver/platinum header
+S4_TXT    = SILVER_TX       # dark text on the silver header
+S4_BAND   = "EEF1F3"        # faint silver zebra for S/4 columns
 
-# theme per module group: header / sub-header / band / tab
+# theme per module group -> all standard headers use brand slate; tabs carry a brand accent
 TH = {
- "master": {"h": "2C5E8A", "s": "3D6E99", "b": ZEBRA, "t": "2C5E8A"},   # Steel/Slate Blue
- "trans":  {"h": "1E5A44", "s": "2E7256", "b": ZEBRA, "t": "1E5A44"},   # Deep Emerald
- "config": {"h": "44546A", "s": "56677F", "b": ZEBRA, "t": "44546A"},   # Corporate Slate
- "cross":  {"h": "2F6F6A", "s": "40837D", "b": ZEBRA, "t": "2F6F6A"},   # Deep Teal
+ "master": {"h": SLATE, "s": SLATE2, "b": ZEBRA, "t": SLATE},    # nutrient/master
+ "trans":  {"h": SLATE, "s": SLATE2, "b": ZEBRA, "t": RED},      # transactional = brand red tab
+ "config": {"h": SLATE, "s": SLATE2, "b": ZEBRA, "t": SLATE},
+ "cross":  {"h": SLATE, "s": SLATE2, "b": ZEBRA, "t": SILVER},   # integration = silver tab
 }
 
 SEARCH_CELL = "C25"          # visible search box (must match the macro & VML anchor)
@@ -309,8 +316,10 @@ def add_back_button(ws, ncol, title):
     b.font = Font(name=FONT_NAME, bold=True, size=10, color=BACK_TXT)
     b.fill = PatternFill("solid", fgColor=BACK_BG)
     b.alignment = Alignment(horizontal="center", vertical="center")
-    b.border = BORDER
-    ws.cell(1, 2).border = BORDER
+    red_side = Side(style="thin", color=RED_HOT)
+    red_border = Border(left=red_side, right=red_side, top=red_side, bottom=red_side)
+    b.border = red_border
+    ws.cell(1, 2).border = red_border
     ws.merge_cells(start_row=1, start_column=3, end_row=1, end_column=ncol)
     t = ws.cell(1, 3, title)
     t.font = Font(name=FONT_NAME, bold=True, size=16, color="FFFFFF")
@@ -337,9 +346,10 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     add_back_button(ws, NCOL, topic["title"] + "   |   ECC 6.0  ➜  S/4HANA")
 
     for j, (lbl, w) in enumerate(COLS, start=1):
-        fill = S4_HDR if j >= S4_COL_START else th["s"]
+        is_s4 = j >= S4_COL_START
+        fill = S4_HDR if is_s4 else th["s"]
         c = ws.cell(2, j, lbl)
-        c.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF")
+        c.font = Font(name=FONT_NAME, bold=True, size=11, color=(S4_TXT if is_s4 else "FFFFFF"))
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         c.border = BORDER; c.fill = PatternFill("solid", fgColor=fill)
         ws.column_dimensions[get_column_letter(j)].width = w
@@ -368,10 +378,10 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
             seq += 1
             band = th["b"] if seq % 2 == 0 else None
             s4b = S4_BAND if seq % 2 == 0 else None
-            style(ws.cell(row, 1, seq), bold=True, fill=band, h="center", color="64748B")
+            style(ws.cell(row, 1, seq), bold=True, fill=band, h="center", color="6B7280")
             style(ws.cell(row, 2, ""), fill=band)
             style(ws.cell(row, 3, ""), fill=band)
-            style(ws.cell(row, 4, tech), bold=True, color="2C5E8A", fill=band, h="left")
+            style(ws.cell(row, 4, tech), bold=True, color=RED, fill=band, h="left")
             style(ws.cell(row, 5, en), fill=band, h="left")
             style(ws.cell(row, 6, he), fill=band, h="right")
             for col in (7, 8, 9, 10): style(ws.cell(row, col, ""), fill=band)
@@ -388,13 +398,13 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
             cell.border = BORDER
             if fend > fstart:
                 ws.merge_cells(start_row=fstart, start_column=col, end_row=fend, end_column=col)
-        vmerge(2, tbl["tcodes"], bold=True, color="2C5E8A")
-        vmerge(3, tbl["name"], bold=True, color="2C5E8A")
-        vmerge(7, funcs, bold=True, color="2C5E8A"); vmerge(8, fdesc)
-        vmerge(9, progs, bold=True, color="2C5E8A"); vmerge(10, pdesc)
-        vmerge(11, tbl["s4_status"], color="9A5A23"); vmerge(12, tbl["s4_repl"], color="9A5A23")
-        vmerge(13, tbl["s4_tcode"], color="9A5A23"); vmerge(14, tbl["fiori"], bold=True, color="B5651D")
-        vmerge(15, sum_note(tbl), color="9A5A23")
+        vmerge(2, tbl["tcodes"], bold=True, color=SLATE)
+        vmerge(3, tbl["name"], bold=True, color=RED)
+        vmerge(7, funcs, bold=True, color=SLATE); vmerge(8, fdesc)
+        vmerge(9, progs, bold=True, color=SLATE); vmerge(10, pdesc)
+        vmerge(11, tbl["s4_status"], color="37474F"); vmerge(12, tbl["s4_repl"], color="37474F")
+        vmerge(13, tbl["s4_tcode"], color="37474F"); vmerge(14, tbl["fiori"], bold=True, color=RED)
+        vmerge(15, sum_note(tbl), color="37474F")
 
         for code in [x.strip() for x in tbl["tcodes"].replace(";", ",").replace("/", ",").split(",") if x.strip()]:
             index_rows.append(("טרנזקציה", code, tbl["he"], tbl["en"], sname, f"A{fstart}"))
@@ -425,11 +435,11 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
         global row
         band = ZEBRA if (row % 2 == 0) else None
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=2)
-        a = ws.cell(row, 1, kind); a.font = Font(name=FONT_NAME, bold=True, size=9, color=th["h"])
+        a = ws.cell(row, 1, kind); a.font = Font(name=FONT_NAME, bold=True, size=9, color=RED)
         a.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); a.border = BORDER
         if band: a.fill = PatternFill("solid", fgColor=band)
         ws.merge_cells(start_row=row, start_column=3, end_row=row, end_column=4)
-        b = ws.cell(row, 3, code); b.font = Font(name=FONT_NAME, bold=True, size=9, color="2C5E8A")
+        b = ws.cell(row, 3, code); b.font = Font(name=FONT_NAME, bold=True, size=9, color=SLATE)
         b.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True); b.border = BORDER
         if band: b.fill = PatternFill("solid", fgColor=band)
         ws.merge_cells(start_row=row, start_column=5, end_row=row, end_column=NCOL)
@@ -470,16 +480,16 @@ def grid_header(ws, cols, fill):
     ws.freeze_panes = "A3"
 
 # === Simplification Item list ===============================================
-simp = new_sheet(SIMP_SHEET, S4_HDR)
+simp = new_sheet(SIMP_SHEET, SILVER)
 add_back_button(simp, 6, "Simplification Item List  -  SAP Notes למיגרציית PM / EAM ל-S/4HANA")
 grid_header(simp, [("מס' (#)", 6), ("תחום / אובייקט", 20), ("Simplification Item (כותרת הפריט)", 42),
-                   ("SAP Note", 16), ("קטגוריה", 18), ("השפעה והמלצה (Impact & Action)", 62)], S4_HDR)
+                   ("SAP Note", 16), ("קטגוריה", 18), ("השפעה והמלצה (Impact & Action)", 62)], SLATE)
 rr = 3
 for i, (obj, title, note, cat, impact) in enumerate(SIMPLIFICATION, start=1):
     band = ZEBRA if i % 2 == 0 else None
     for j, v in enumerate([i, obj, title, note, cat, impact], start=1):
         c = simp.cell(rr, j, v)
-        c.font = Font(name=FONT_NAME, bold=(j in (3, 4)), size=10, color="9A5A23" if j == 4 else INK)
+        c.font = Font(name=FONT_NAME, bold=(j in (3, 4)), size=10, color=RED if j == 4 else INK)
         c.alignment = Alignment(horizontal=("center" if j in (1, 4) else "right"), vertical="top", wrap_text=True)
         c.border = BORDER
         if band: c.fill = PatternFill("solid", fgColor=band)
@@ -489,16 +499,17 @@ for i, (obj, title, note, cat, impact) in enumerate(SIMPLIFICATION, start=1):
 
 # === Cockpit - migration tracking ==========================================
 STATUSES = ["Not started", "In analysis", "In conversion", "Tested", "Done"]
-STATUS_FILL = {"Not started": "F1F5F9", "In analysis": "FFF2CC", "In conversion": "FCE2CD",
-               "Tested": "DCE6F4", "Done": "D6EFD8"}
-STATUS_TXT = {"Not started": "475569", "In analysis": "92722A", "In conversion": "9A5A23",
-              "Tested": "2C5E8A", "Done": "1E5A44"}
-cock = new_sheet(COCKPIT, DASH_HDR)
+# branded soft pastels: rose for open, silver for analysis/conversion, soft green for done
+STATUS_FILL = {"Not started": "FCE4E6", "In analysis": "ECEFF1", "In conversion": "E1E6EA",
+               "Tested": "DCE6EC", "Done": "DCEFE0"}
+STATUS_TXT = {"Not started": "B01722", "In analysis": "475569", "In conversion": "37474F",
+              "Tested": "2A4A57", "Done": "1E5A44"}
+cock = new_sheet(COCKPIT, RED)
 add_back_button(cock, 9, "Cockpit מעקב מיגרציה  -  Migration Tracking (NEO Project)")
 cock_cols = [("מס' (#)", 6), ("מודול / נושא", 26), ("אובייקט / טבלה", 16), ("סטטוס מעבר (Status)", 18),
              ("אחראי (Owner)", 16), ("תאריך יעד", 13), ("תאריך סיום", 13),
              ("הערות / בלוקרים", 34), ("קישור לגיליון", 14)]
-grid_header(cock, cock_cols, DASH_HDR)
+grid_header(cock, cock_cols, SLATE)
 rr = 3
 for i, (tname, the, ttitle, tsheet, tcell, ttheme) in enumerate(tables_meta, start=1):
     band = ZEBRA if i % 2 == 0 else None
@@ -506,7 +517,7 @@ for i, (tname, the, ttitle, tsheet, tcell, ttheme) in enumerate(tables_meta, sta
     for j, v in enumerate(vals, start=1):
         c = cock.cell(rr, j, v if v is not None else "")
         c.font = Font(name=FONT_NAME, bold=(j == 3), size=10,
-                      color="2C5E8A" if j == 3 else INK)
+                      color=RED if j == 3 else INK)
         c.alignment = Alignment(horizontal=("center" if j in (1, 4, 6, 7, 9) else ("left" if j == 3 else "right")),
                                 vertical="center", wrap_text=True)
         c.border = BORDER
@@ -569,16 +580,16 @@ cock.add_chart(donut, "K11")
 
 # === Custom Code Check =====================================================
 CCC_STATUS = ["To review", "In progress", "Adapted", "OK - no change", "Obsolete"]
-CCC_FILL = {"To review": "FFF2CC", "In progress": "FCE2CD", "Adapted": "DCE6F4",
-            "OK - no change": "D6EFD8", "Obsolete": "F1F5F9"}
-CCC_TXT = {"To review": "92722A", "In progress": "9A5A23", "Adapted": "2C5E8A",
-           "OK - no change": "1E5A44", "Obsolete": "475569"}
-ccc = new_sheet(CCC, "B5651D")
+CCC_FILL = {"To review": "FCE4E6", "In progress": "ECEFF1", "Adapted": "DCE6EC",
+            "OK - no change": "DCEFE0", "Obsolete": "EEF1F3"}
+CCC_TXT = {"To review": "B01722", "In progress": "475569", "Adapted": "2A4A57",
+           "OK - no change": "1E5A44", "Obsolete": "6B7280"}
+ccc = new_sheet(CCC, SILVER)
 add_back_button(ccc, 9, "Custom Code Check  -  בדיקת User Exits / BAdIs למעבר S/4HANA")
 ccc_cols = [("מס' (#)", 6), ("מודול / נושא", 24), ("סוג (Type)", 16), ("קוד / שם טכני", 22),
             ("תיאור (Hebrew)", 34), ("סטטוס בדיקה", 16), ("המלצת מעבר ל-S/4", 30),
             ("אחראי (Owner)", 14), ("הערות", 22)]
-grid_header(ccc, ccc_cols, "B5651D")
+grid_header(ccc, ccc_cols, SLATE)
 rr = 3
 EXIT_REC = "בדוק ב-Custom Code Migration (SCMON/ATC); שקול מעבר ל-BAdI/Enhancement Spot מודרני."
 BADI_REC = "אמת תאימות ה-BAdI ב-S/4 (SPAU_ENH); ודא חתימה ומימוש אקטיבי לאחר השדרוג."
@@ -592,7 +603,7 @@ for ti, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
             for j, v in enumerate(vals, start=1):
                 c = ccc.cell(rr, j, v)
                 c.font = Font(name=FONT_NAME, bold=(j == 4), size=10,
-                              color="2C5E8A" if j == 4 else INK)
+                              color=SLATE if j == 4 else INK)
                 c.alignment = Alignment(horizontal=("center" if j in (1, 3, 6, 8) else ("left" if j == 4 else "right")),
                                         vertical="center", wrap_text=True)
                 c.border = BORDER
@@ -651,12 +662,12 @@ kh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); kh.fill = Pa
 kh.alignment = Alignment(horizontal="right")
 
 # 6 KPI tiles across B..G (number row 6, label row 7)
-kpis = [("סה\"כ אובייקטים", f"={TOTcnt}", "2C5E8A", "EAF0F6"),
-        ("הושלם (Done)", f"={DONEcnt}", "1E5A44", "D6EFD8"),
-        ("נבדק (Tested)", f"={TESTcnt}", "2C5E8A", "DCE6F4"),
-        ("בתהליך (In Progress)", f"={PROGcnt}", "9A5A23", "FCE2CD"),
-        ("פתוח (Open)", f"={OPENcnt}", "475569", "F1F5F9"),
-        ("% השלמה", f"=IFERROR(({DONEcnt})/({TOTcnt}),0)", "B5651D", "FBE9DA")]
+kpis = [("סה\"כ אובייקטים", f"={TOTcnt}", SLATE, "ECEFF1"),
+        ("הושלם (Done)", f"={DONEcnt}", "1E5A44", "DCEFE0"),
+        ("נבדק (Tested)", f"={TESTcnt}", "2A4A57", "DCE6EC"),
+        ("בתהליך (In Progress)", f"={PROGcnt}", "37474F", "E1E6EA"),
+        ("פתוח (Open)", f"={OPENcnt}", "B01722", "FCE4E6"),
+        ("% השלמה", f"=IFERROR(({DONEcnt})/({TOTcnt}),0)", RED, "FBE3E4")]
 for k, (lbl, formula_v, txt, fillc) in enumerate(kpis):
     cc = 2 + k
     num = dash.cell(6, cc, formula_v)
@@ -684,14 +695,14 @@ dash.add_chart(bar, "J5")
 
 dash.merge_cells("B9:H9")
 nh = dash.cell(9, 2, "ניווט מהיר לגיליונות  (לחץ על כרטיס כדי לעבור)")
-nh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor=DASH_HDR)
+nh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor=SLATE)
 nh.alignment = Alignment(horizontal="right")
 
 card_cols = [2, 4, 6, 8]                # 4 cards per row (cols B, D, F, H)
-nav_items = [(t["title"], sn, TH[t["theme"]]["h"]) for t, sn in zip(TOPICS, sheet_names)]
-nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, S4_HDR))
-nav_items.append(("◆ " + COCKPIT, COCKPIT, DASH_HDR))
-nav_items.append(("⚙ " + CCC, CCC, "B5651D"))
+nav_items = [(t["title"], sn, TH[t["theme"]]["t"]) for t, sn in zip(TOPICS, sheet_names)]
+nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, SILVER))
+nav_items.append(("◆ " + COCKPIT, COCKPIT, RED))
+nav_items.append(("⚙ " + CCC, CCC, SLATE))
 r = 10
 for i, (title, sn, hdr) in enumerate(nav_items):
     slot = i % 4
@@ -700,30 +711,30 @@ for i, (title, sn, hdr) in enumerate(nav_items):
     dash.merge_cells(start_row=r, start_column=c0, end_row=r+1, end_column=c0)
     cell = dash.cell(r, c0, title)
     cell.hyperlink = f"#'{sn}'!A1"
-    cell.font = Font(bold=True, size=10, color="FFFFFF")
+    cell.font = Font(bold=True, size=10, color=(SLATE if hdr == SILVER else "FFFFFF"))
     cell.fill = PatternFill("solid", fgColor=hdr)
     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     for rr in (r, r+1): dash.cell(rr, c0).border = BORDER
 r += 3
 
 dash.merge_cells(start_row=r, start_column=2, end_row=r, end_column=8)
-lg = dash.cell(r, 2, "מקרא:  כחול-פלדה=נתוני אב | ירוק אמרלד=תנועתי | סלייט=קונפיגורציה | טורקיז=אינטגרציה | נחושת=עמודות S/4HANA")
+lg = dash.cell(r, 2, "מקרא מותג CBC:  אדום=תנועתי/עוגני-על | צפחה=נתוני אב וכותרות | כסף=אינטגרציה ועמודות S/4HANA")
 lg.font = Font(name=FONT_NAME, italic=True, size=9, color="64748B"); lg.alignment = Alignment(horizontal="right")
 lg.fill = PatternFill("solid", fgColor=DASH_BG)
 
 # --- search block (row 24 header, row 25 box) ---
 dash.merge_cells("B24:F24")
 sh = dash.cell(24, 2, "🔍 חיפוש גלובלי  (טבלה / טרנזקציה / שדה / פונקציה - עברית או אנגלית)")
-sh.font = Font(bold=True, size=12, color="FFFFFF"); sh.fill = PatternFill("solid", fgColor=S4_HDR)
+sh.font = Font(bold=True, size=12, color="FFFFFF"); sh.fill = PatternFill("solid", fgColor=SLATE)
 sh.alignment = Alignment(horizontal="right")
 lbl = dash.cell(25, 2, "הקלד כאן:")
 lbl.font = Font(bold=True, size=11); lbl.alignment = Alignment(horizontal="right")
 lbl.fill = PatternFill("solid", fgColor=DASH_BG)
 dash.merge_cells("C25:F25")
 sc = dash.cell(25, 3, "")
-sc.fill = PatternFill("solid", fgColor="FFF2CC")
-sc.font = Font(bold=True, size=12, color="1F3864")
-med = Side(style="medium", color="C55A11")
+sc.fill = PatternFill("solid", fgColor="FCE4E6")
+sc.font = Font(bold=True, size=12, color=SLATE)
+med = Side(style="medium", color=RED_HOT)
 sc.border = Border(left=med, right=med, top=med, bottom=med)
 dash.row_dimensions[25].height = 26
 
@@ -731,7 +742,7 @@ dash.row_dimensions[25].height = 26
 res_hdrs = ["קישור", "קוד / שם טכני", "פירוש בעברית", "English", "גיליון", "תא"]
 for j, h in enumerate(res_hdrs):
     c = dash.cell(27, 2 + j, h)
-    c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="404040")
+    c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=SLATE)
     c.alignment = Alignment(horizontal="center"); c.border = BORDER
 
 C = lambda k: get_column_letter(IDX_COL0 + k)         # P,Q,R,S,T,U,V
@@ -750,12 +761,12 @@ fcell.font = Font(size=10); fcell.alignment = Alignment(horizontal="right")
 idx_titles = ["סוג (Type)", "קוד (Code)", "עברית", "English", "גיליון (Sheet)", "תא (Cell)", "קישור (Link)"]
 for k, ttl in enumerate(idx_titles):
     c = dash.cell(1, IDX_COL0 + k, ttl)
-    c.font = Font(bold=True, size=8, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="595959")
+    c.font = Font(bold=True, size=8, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=SLATE)
     c.alignment = Alignment(horizontal="right")
 for ri, row in enumerate(index_rows, start=2):
     typ, code, he, en, sn, cell = row
     dash.cell(ri, IDX_COL0 + 0, typ)
-    dash.cell(ri, IDX_COL0 + 1, code).font = Font(bold=True, size=8, color="1F3864")
+    dash.cell(ri, IDX_COL0 + 1, code).font = Font(bold=True, size=8, color=SLATE)
     dash.cell(ri, IDX_COL0 + 2, he)
     dash.cell(ri, IDX_COL0 + 3, en)
     dash.cell(ri, IDX_COL0 + 4, sn)
@@ -780,7 +791,7 @@ note = dash.cell(56, 2,
   "אם Excel חוסם מאקרו - אשר 'Enable Content'; אם נדרש, ייבא את modPM.bas (Alt+F11 -> Import).")
 note.font = Font(name=FONT_NAME, italic=True, size=9, color="475569")
 note.alignment = Alignment(horizontal="right", vertical="top", wrap_text=True)
-note.fill = PatternFill("solid", fgColor="EEF2F7")
+note.fill = PatternFill("solid", fgColor="F1F3F5")
 note.border = BORDER
 dash.freeze_panes = "A2"
 
