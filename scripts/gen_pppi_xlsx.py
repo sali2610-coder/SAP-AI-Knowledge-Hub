@@ -8,7 +8,7 @@ and ER - Join Map. VBA exported as plain text (pppi_modPM.bas).
 
 Run:  python3 scripts/gen_pppi_xlsx.py   ->  SAP_PPPI_ECC6_to_S4_Migration.xlsx + pppi_modPM.bas
 """
-import os, sys
+import os, sys, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
 from openpyxl import Workbook
@@ -19,6 +19,7 @@ from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.utils import get_column_letter
 from pppi_data import TOPICS, OPS, PPVS, table_funcs, table_progs
+from pppi_tools_data import TCODES_DIR, TOOLS_DIR
 
 # ---- CBC brand palette ----
 FONT = "Segoe UI"; RED = "D62027"; REDHOT = "F40009"; SLATE = "1E1E24"; SLATE2 = "2B2B33"
@@ -246,6 +247,72 @@ pv.oddHeader.center.text = '&"Segoe UI,Bold"&11&K1E1E24Project NEO  |  SAP PP vs
 pv.oddFooter.center.text = '&"Segoe UI"&8&K6B7280CBC NEO - PP vs PP-PI - Page &P of &N'
 pv.print_area = f"A1:E{rr-1}"; pv.page_setup.orientation = "landscape"; pv.print_options.gridLines = False
 
+# ---- Directory sheets: Production T-codes + Basis Toolkit ----
+def _dir_header(ws, cols):
+    for j, (lbl, w) in enumerate(cols, start=1):
+        c = ws.cell(2, j, lbl); c.font = f(11, True, "FFFFFF"); c.fill = PatternFill("solid", fgColor=SLATE)
+        c.alignment = Alignment("center", "center", wrap_text=True); c.border = BORDER
+        ws.column_dimensions[get_column_letter(j)].width = w
+    ws.row_dimensions[2].height = 30; ws.freeze_panes = "A3"
+def _fiori_cell(ws, rr, col, fname, fid, band):
+    fc = ws.cell(rr, col, f"{fname}  ({fid})")
+    m = re.search(r"F\d{3,5}", fid or "")
+    if m:
+        fc.hyperlink = f"https://fioriappslibrary.hana.ondemand.com/sap/fix/externalViewer/#/detail/Apps('{m.group(0)}')"
+        fc.font = f(9, True, "0563C1", u="single")
+    else:
+        fc.font = f(9, True, "9A5A23")
+        if band: fc.fill = PatternFill("solid", fgColor=band)
+    fc.alignment = Alignment("center", "top", wrap_text=True); fc.border = BORDER
+
+SCOPE_FILL = {"PP": ("ECEFF1", "37474F"), "PP-PI": ("DCEFE0", "1E5A44"), "Both": ("FBE3E4", "D62027")}
+TC_SHEET = "PP_PPPI_Tcodes"
+tc = wb.create_sheet(TC_SHEET); tc.sheet_view.rightToLeft = True; tc.sheet_properties.tabColor = RED
+back_btn(tc, 7, "Production Transactions & Reports Directory - מדריך טרנזקציות ודוחות ייצור  ·  CBC NEO")
+_dir_header(tc, [("מס' (#)", 5), ("Legacy ECC T-Code", 20), ("מודול (Scope)", 13),
+                 ("הסבר פונקציונלי בעברית", 58), ("שינוי מבני S/4HANA", 40),
+                 ("Fiori App + ID", 26), ("נוף Fiori מורחב (Hebrew)", 50)])
+rr = 3
+for i, (tcode, scope, he, s4, fname, fid, land) in enumerate(TCODES_DIR, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    for j, v in enumerate([i, tcode, None, he, s4, None, land], start=1):
+        if v is None: continue
+        c = tc.cell(rr, j, v); col = RED if j == 2 else INK
+        c.font = f(10, j == 2, col)
+        c.alignment = Alignment(("center" if j == 1 else ("left" if j == 2 else "right")), "top", wrap_text=True); c.border = BORDER
+        if band: c.fill = PatternFill("solid", fgColor=band)
+    sf = SCOPE_FILL.get(scope, ("F3F4F6", "333333")); sc_ = tc.cell(rr, 3, scope)
+    sc_.fill = PatternFill("solid", fgColor=sf[0]); sc_.font = f(10, True, sf[1]); sc_.border = BORDER
+    sc_.alignment = Alignment("center", "center", wrap_text=True)
+    _fiori_cell(tc, rr, 6, fname, fid, band)
+    tc.row_dimensions[rr].height = 66
+    index_rows.append(("T-code", tcode, he, scope, TC_SHEET, f"A{rr}"))
+    index_rows.append(("Fiori", fid, fname, scope, TC_SHEET, f"A{rr}"))
+    rr += 1
+tc.oddFooter.center.text = '&"Segoe UI"&8&K6B7280CBC NEO - PP/PP-PI T-codes - Page &P of &N'
+tc.page_setup.orientation = "landscape"; tc.print_options.gridLines = False; tc.print_title_rows = "1:2"
+
+TL_SHEET = "SAP_Maint_Tools"
+tl = wb.create_sheet(TL_SHEET); tl.sheet_view.rightToLeft = True; tl.sheet_properties.tabColor = SLATE
+back_btn(tl, 6, "General Implementer & Basis Toolkit - ערכת כלי המיישם וה-Basis  ·  CBC NEO")
+_dir_header(tl, [("מס' (#)", 5), ("כלי (T-Code)", 22), ("יכולות וסקופ טכני (Hebrew)", 58),
+                 ("השפעת S/4HANA", 42), ("Fiori App + ID", 26), ("נוף Launchpad (Hebrew)", 50)])
+rr = 3
+for i, (tcode, cap, s4, fname, fid, land) in enumerate(TOOLS_DIR, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    for j, v in enumerate([i, tcode, cap, s4, None, land], start=1):
+        if v is None: continue
+        c = tl.cell(rr, j, v); col = RED if j == 2 else INK
+        c.font = f(10, j == 2, col)
+        c.alignment = Alignment(("center" if j == 1 else ("left" if j == 2 else "right")), "top", wrap_text=True); c.border = BORDER
+        if band: c.fill = PatternFill("solid", fgColor=band)
+    _fiori_cell(tl, rr, 5, fname, fid, band)
+    tl.row_dimensions[rr].height = 70
+    index_rows.append(("Tool", tcode, cap, "", TL_SHEET, f"A{rr}"))
+    rr += 1
+tl.oddFooter.center.text = '&"Segoe UI"&8&K6B7280CBC NEO - Implementer Toolkit - Page &P of &N'
+tl.page_setup.orientation = "landscape"; tl.print_options.gridLines = False; tl.print_title_rows = "1:2"
+
 # ---- Cockpit ----
 STAT = ["Not started", "In analysis", "In conversion", "Tested", "Done"]
 SF = {"Not started": "FCE4E6", "In analysis": "ECEFF1", "In conversion": "E1E6EA", "Tested": "DCE6EC", "Done": "DCEFE0"}
@@ -353,7 +420,7 @@ dash.row_dimensions[6].height = 30
 dash.merge_cells("B9:H9"); nh = dash.cell(9, 2, "ניווט מהיר לגיליונות"); nh.font = f(12, True, "FFFFFF")
 nh.fill = PatternFill("solid", fgColor=SLATE); nh.alignment = Alignment(horizontal="right")
 nav = [(t["title"], sn, TAB[t["theme"]]) for t, sn in zip(TOPICS, sheet_names)]
-nav += [("📚 " + PPVS_SHEET, PPVS_SHEET, SILVER), ("◆ " + COCKPIT, COCKPIT, RED), ("⇄ " + ER, ER, RED)]
+nav += [("📚 " + PPVS_SHEET, PPVS_SHEET, SILVER), ("🛠 " + TC_SHEET, TC_SHEET, RED), ("⚙ " + TL_SHEET, TL_SHEET, SLATE), ("◆ " + COCKPIT, COCKPIT, RED), ("⇄ " + ER, ER, RED)]
 cardc = [2, 4, 6, 8]; r = 10
 for i, (title, sn, hdr) in enumerate(nav):
     if i % 4 == 0 and i: r += 3

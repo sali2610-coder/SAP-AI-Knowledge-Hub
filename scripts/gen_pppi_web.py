@@ -14,6 +14,7 @@ to localStorage. Run: python3 scripts/gen_pppi_web.py -> index_pppi.html
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pppi_data import TOPICS, OPS, PPVS, table_funcs, table_progs
+from pppi_tools_data import TCODES_DIR, TOOLS_DIR
 
 topics, cockpit, joins = [], [], []
 for ti, t in enumerate(TOPICS):
@@ -33,6 +34,7 @@ for ti, t in enumerate(TOPICS):
                    "ops": {"tcodes": OPS[ti]["tcodes"], "interfaces": OPS[ti]["interfaces"], "programs": OPS[ti]["programs"]}})
 
 DATA = {"topics": topics, "cockpit": cockpit, "joins": joins, "ppvs": PPVS,
+        "tcodes_dir": TCODES_DIR, "tools_dir": TOOLS_DIR,
         "statuses": ["Not started", "In analysis", "In conversion", "Tested", "Done"]}
 
 HTML = r"""<!DOCTYPE html>
@@ -199,12 +201,27 @@ function viewER(){
    <div class="overflow-x-auto"><table class="resp"><thead><tr><th>#</th><th>טבלה</th><th>JOIN ON (SQL/CDS)</th><th>תיאור</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 
+function scopeBadge(s){const c=s==="PP-PI"?["#DCEFE0","#1E5A44"]:s==="PP"?["#ECEFF1","#37474F"]:["#FBE3E4","#D62027"];return `<span class="badge" style="background:${c[0]};color:${c[1]}">${esc(s)}</span>`;}
+function viewTcodes(){
+ const rows=DATA.tcodes_dir.map((x,i)=>`<tr id="tcd_${i}"><td data-label="#" class="text-center">${i+1}</td><td data-label="ECC T-Code"><b style="color:#D62027">${esc(x[0])}</b></td><td data-label="Scope" class="text-center">${scopeBadge(x[1])}</td><td data-label="הסבר פונקציונלי">${esc(x[2])}</td><td data-label="שינוי S/4HANA" style="color:#9A5A23">${esc(x[3])}</td><td data-label="Fiori App + ID">${fioriLink(x[4]+" ("+x[5]+")")}</td><td data-label="נוף Fiori">${esc(x[6])}</td></tr>`).join("");
+ return `<div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#E5E7EB">
+   <div class="text-white px-3 py-2 font-bold" style="background:#D62027">🛠 Production Transactions & Reports Directory - מדריך טרנזקציות ודוחות ייצור (${DATA.tcodes_dir.length})</div>
+   <div class="p-3 text-xs text-slate-500">מיפוי מלא של טרנזקציות הביצוע והדוחות: סקופ (PP / PP-PI / Both), הסבר עברי, שינוי מבני ב-S/4HANA, ואפליקציית Fiori מחליפה + ID.</div>
+   <div class="overflow-x-auto"><table class="resp"><thead><tr><th>#</th><th>ECC T-Code</th><th>Scope</th><th>הסבר פונקציונלי (Hebrew)</th><th>שינוי מבני S/4HANA</th><th>Fiori App + ID</th><th>נוף Fiori מורחב</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function viewTools(){
+ const rows=DATA.tools_dir.map((x,i)=>`<tr id="tool_${i}"><td data-label="#" class="text-center">${i+1}</td><td data-label="כלי"><b style="color:#D62027">${esc(x[0])}</b></td><td data-label="יכולות">${esc(x[1])}</td><td data-label="השפעת S/4" style="color:#9A5A23">${esc(x[2])}</td><td data-label="Fiori App + ID">${fioriLink(x[3]+" ("+x[4]+")")}</td><td data-label="נוף Launchpad">${esc(x[5])}</td></tr>`).join("");
+ return `<div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#E5E7EB">
+   <div class="text-white px-3 py-2 font-bold" style="background:#1E1E24">⚙ General Implementer & Basis Toolkit - ערכת כלי המיישם וה-Basis (${DATA.tools_dir.length})</div>
+   <div class="p-3 text-xs text-slate-500">כלי תשתית למיישם/ABAP/Basis: יכולות טכניות, השפעת S/4HANA (HANA/CDS/BP), ואפליקציית Fiori ניהולית מקבילה.</div>
+   <div class="overflow-x-auto"><table class="resp"><thead><tr><th>#</th><th>כלי (T-Code)</th><th>יכולות וסקופ טכני (Hebrew)</th><th>השפעת S/4HANA</th><th>Fiori App + ID</th><th>נוף Launchpad (Hebrew)</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
 // ---------- Navigation ----------
 const NAV=[{id:"home",icon:"🚀",label:"Migration Cockpit (Home)"},
  {group:"זרמי ליבה (Core Streams - קפיצה)"},
  ...DATA.topics.map(t=>({id:"st-"+t.idx,icon:"📄",label:t.title})),
  {group:"לימוד וכלים (Education & Tools)"},
- {id:"edu",icon:"📚",label:"PP מול PP-PI"},{id:"er",icon:"⇄",label:"ER - Join Map"}];
+ {id:"edu",icon:"📚",label:"PP מול PP-PI"},{id:"tcd",icon:"🛠",label:"מדריך טרנזקציות ייצור"},{id:"tools",icon:"⚙",label:"ערכת כלי Basis/מיישם"},{id:"er",icon:"⇄",label:"ER - Join Map"}];
 function renderNav(a){document.getElementById("nav").innerHTML=NAV.map(n=> n.group?`<div class="px-4 pt-3 pb-1 text-[11px] font-bold text-white/40">${esc(n.group)}</div>`:`<button class="navbtn w-full text-right px-4 py-2 ${n.id===a?'active':''}" onclick="show('${n.id}')"><span class="opacity-70 ml-2">${n.icon}</span>${esc(n.label)}</button>`).join("");}
 
 let CURRENT="home";
@@ -221,6 +238,8 @@ function show(id){
  if(id==="home"){h.textContent="Migration Cockpit & Blueprint";m.innerHTML=viewHome();}
  else if(id==="edu"){h.textContent="PP מול PP-PI";m.innerHTML=viewEdu();}
  else if(id==="er"){h.textContent="ER - Join Map";m.innerHTML=viewER();}
+ else if(id==="tcd"){h.textContent="מדריך טרנזקציות ייצור";m.innerHTML=viewTcodes();}
+ else if(id==="tools"){h.textContent="ערכת כלי Basis/מיישם";m.innerHTML=viewTools();}
  window.scrollTo(0,0);
 }
 function doSearch(q){q=q.trim().toLowerCase();if(!q)return;
@@ -231,6 +250,8 @@ function doSearch(q){q=q.trim().toLowerCase();if(!q)return;
      renderNav("st-"+t.idx);
      setTimeout(()=>{const o=document.getElementById("o_"+t.idx+"_"+oi);if(o){o.classList.add("open");o.scrollIntoView({behavior:"smooth",block:"center"});o.querySelector(".acc-head").style.background="#FFF2A8";}},60);
      return;}}
+ for(let i=0;i<DATA.tcodes_dir.length;i++){const x=DATA.tcodes_dir[i];if((x[0]+x[1]+x[2]+x[3]+x[4]+x[5]+x[6]).toLowerCase().includes(q)){show("tcd");setTimeout(()=>{const r=document.getElementById("tcd_"+i);if(r){r.scrollIntoView({block:"center"});r.style.background="#FFF2A8";}},60);return;}}
+ for(let i=0;i<DATA.tools_dir.length;i++){const x=DATA.tools_dir[i];if((x[0]+x[1]+x[2]+x[3]+x[4]+x[5]).toLowerCase().includes(q)){show("tools");setTimeout(()=>{const r=document.getElementById("tool_"+i);if(r){r.scrollIntoView({block:"center"});r.style.background="#FFF2A8";}},60);return;}}
  for(const j of DATA.joins)if(j.join.toLowerCase().includes(q)){show("er");return;}
  alert("לא נמצא: "+q);}
 show("home");
