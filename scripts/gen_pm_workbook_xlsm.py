@@ -36,14 +36,41 @@ import pandas as pd                              # required by spec (used for th
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.worksheet.properties import PageSetupProperties
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.formatting.rule import CellIsRule
 from openpyxl.utils import get_column_letter
 
-from pm_data import TH, COLS as COLS_BASE, S4_COL_START, TOPICS
+from pm_data import COLS as COLS_BASE, S4_COL_START, TOPICS
 from pm_ext_data import EXTENSIONS, SIMPLIFICATION
 
 DASH = "מסך ניווט מרכזי"
 SIMP_SHEET = "Simplification Item list"
-S4_HDR, S4_BAND = "C55A11", "FCEFE1"
+COCKPIT = "Cockpit מעקב מיגרציה"
+CCC = "Custom Code Check"
+
+# ---------------------------------------------------------------------------
+#  UI/UX DESIGN SYSTEM  (modern corporate palette + typography)
+# ---------------------------------------------------------------------------
+FONT_NAME = "Segoe UI"
+INK       = "1E293B"        # slate-800 body text
+HEB_INK   = "1E293B"
+GRID      = "E2E8F0"        # light-grey cell borders
+ZEBRA     = "F8FAFC"        # ultra-soft alternate row
+DASH_HDR  = "1B365D"        # Midnight Blue
+DASH_BG   = "F5F7FA"        # soft grey dashboard background
+BACK_BG   = "E2EBF4"        # back-button soft blue
+BACK_TXT  = "1B365D"
+S4_HDR    = "D97736"        # muted copper/amber - S/4HANA future-state signpost
+S4_BAND   = "FBF1E6"        # faint copper zebra for S/4 columns
+
+# theme per module group: header / sub-header / band / tab
+TH = {
+ "master": {"h": "2C5E8A", "s": "3D6E99", "b": ZEBRA, "t": "2C5E8A"},   # Steel/Slate Blue
+ "trans":  {"h": "1E5A44", "s": "2E7256", "b": ZEBRA, "t": "1E5A44"},   # Deep Emerald
+ "config": {"h": "44546A", "s": "56677F", "b": ZEBRA, "t": "44546A"},   # Corporate Slate
+ "cross":  {"h": "2F6F6A", "s": "40837D", "b": ZEBRA, "t": "2F6F6A"},   # Deep Teal
+}
+
 SEARCH_CELL = "C21"          # visible search box (must match the macro)
 IDX_COL0 = 16                # column P - first index column (hidden block on dashboard)
 
@@ -65,7 +92,7 @@ def sum_note(tbl):
     if "מותאם" in status:
         return ("אין המרת טבלה הרסנית, אך מודל הנתונים מותאם - הרץ Regression Test ובדוק User Exits/דוחות מותאמים.")
     return ("ללא פעולת המרה ייעודית ב-SUM (טבלה תואמת). מומלץ Regression Test ואימות התאמות אישיות לאחר ההמרה.")
-thin = Side(style="thin", color="C9C9C9")
+thin = Side(style="thin", color=GRID)
 BORDER = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 # ===========================================================================
@@ -258,8 +285,8 @@ def make_vbaproject_bin(macro_src, mn='modPM'):
 # ===========================================================================
 # 3) Build the workbook with openpyxl
 # ===========================================================================
-def style(c, *, bold=False, color="222222", fill=None, v="center", size=10, wrap=True, h="right"):
-    c.font = Font(bold=bold, size=size, color=color)
+def style(c, *, bold=False, color=INK, fill=None, v="center", size=10, wrap=True, h="right"):
+    c.font = Font(name=FONT_NAME, bold=bold, size=size, color=color)
     c.alignment = Alignment(horizontal=h, vertical=v, wrap_text=wrap)
     c.border = BORDER
     if fill: c.fill = PatternFill("solid", fgColor=fill)
@@ -268,12 +295,36 @@ def safe(name):
     for ch in ':\\/?*[]': name = name.replace(ch, "")
     return name[:31]
 
+# data-grid alignment: IDs centered, technical/English left, Hebrew right
+LEFTCOLS  = {2, 3, 4, 5, 7, 9, 14}
+RIGHTCOLS = {6, 8, 10, 11, 12, 13, 15}
+def col_h(col):
+    return "center" if col == 1 else ("left" if col in LEFTCOLS else "right")
+
+def add_back_button(ws, ncol, title):
+    """Modern back-to-dashboard button (A1:B1) + centred 16pt title block (C1:ncol)."""
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
+    b = ws.cell(1, 1, "◄ חזרה למסך הראשי")
+    b.hyperlink = f"#'{DASH}'!A1"
+    b.font = Font(name=FONT_NAME, bold=True, size=10, color=BACK_TXT)
+    b.fill = PatternFill("solid", fgColor=BACK_BG)
+    b.alignment = Alignment(horizontal="center", vertical="center")
+    b.border = BORDER
+    ws.cell(1, 2).border = BORDER
+    ws.merge_cells(start_row=1, start_column=3, end_row=1, end_column=ncol)
+    t = ws.cell(1, 3, title)
+    t.font = Font(name=FONT_NAME, bold=True, size=16, color="FFFFFF")
+    t.fill = PatternFill("solid", fgColor=DASH_HDR)
+    t.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 30
+
 wb = Workbook()
 wb.remove(wb.active)
 sheet_names = [safe(t["title"]) for t in TOPICS]
 dash = wb.create_sheet(DASH)               # first sheet -> Sheets(1) in VBA
 
 index_rows = []                            # (type, code, he, en, sheet, cell)
+tables_meta = []                           # (table, he, topic_title, sheet, cell, theme) - for Cockpit
 
 for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     th = TH[topic["theme"]]
@@ -283,26 +334,16 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     ws.sheet_properties.tabColor = th["t"]
     ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
 
-    back = ws.cell(1, 1, "▶ חזרה למסך ראשי")
-    back.hyperlink = f"#'{DASH}'!A1"
-    back.font = Font(bold=True, size=10, color="FFFFFF", underline="single")
-    back.fill = PatternFill("solid", fgColor="404040")
-    back.alignment = Alignment(horizontal="center", vertical="center")
-    ws.merge_cells(start_row=1, start_column=2, end_row=1, end_column=NCOL)
-    t = ws.cell(1, 2, topic["title"] + "   |   ECC 6.0  ➜  S/4HANA")
-    t.font = Font(bold=True, size=13, color="FFFFFF")
-    t.fill = PatternFill("solid", fgColor=th["h"])
-    t.alignment = Alignment(horizontal="right", vertical="center")
-    ws.row_dimensions[1].height = 26
+    add_back_button(ws, NCOL, topic["title"] + "   |   ECC 6.0  ➜  S/4HANA")
 
     for j, (lbl, w) in enumerate(COLS, start=1):
         fill = S4_HDR if j >= S4_COL_START else th["s"]
         c = ws.cell(2, j, lbl)
-        c.font = Font(bold=True, size=9, color="FFFFFF")
+        c.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF")
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         c.border = BORDER; c.fill = PatternFill("solid", fgColor=fill)
         ws.column_dimensions[get_column_letter(j)].width = w
-    ws.row_dimensions[2].height = 40
+    ws.row_dimensions[2].height = 28
     ws.freeze_panes = "A3"
 
     row = 3
@@ -310,11 +351,12 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     for tbl in topic["tables"]:
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOL)
         hc = ws.cell(row, 1, f"  ◆ טבלה {tbl['name']}  -  {tbl['he']}  ({tbl['en']})")
-        hc.font = Font(bold=True, size=11, color="FFFFFF")
+        hc.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF")
         hc.fill = PatternFill("solid", fgColor=th["h"])
         hc.alignment = Alignment(horizontal="right", vertical="center")
-        ws.row_dimensions[row].height = 22
+        ws.row_dimensions[row].height = 24
         index_rows.append(("טבלה", tbl["name"], tbl["he"], tbl["en"], sname, f"A{row}"))
+        tables_meta.append((tbl["name"], tbl["he"], topic["title"], sname, f"A{row}", topic["theme"]))
         row += 1
 
         fstart = row
@@ -326,33 +368,33 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
             seq += 1
             band = th["b"] if seq % 2 == 0 else None
             s4b = S4_BAND if seq % 2 == 0 else None
-            style(ws.cell(row, 1, seq), bold=True, fill=band, h="center")
+            style(ws.cell(row, 1, seq), bold=True, fill=band, h="center", color="64748B")
             style(ws.cell(row, 2, ""), fill=band)
             style(ws.cell(row, 3, ""), fill=band)
-            style(ws.cell(row, 4, tech), bold=True, color="1F3864", fill=band)
-            style(ws.cell(row, 5, en), fill=band)
-            style(ws.cell(row, 6, he), fill=band)
+            style(ws.cell(row, 4, tech), bold=True, color="2C5E8A", fill=band, h="left")
+            style(ws.cell(row, 5, en), fill=band, h="left")
+            style(ws.cell(row, 6, he), fill=band, h="right")
             for col in (7, 8, 9, 10): style(ws.cell(row, col, ""), fill=band)
             for col in (11, 12, 13, 14): style(ws.cell(row, col, ""), fill=s4b)
-            ws.row_dimensions[row].height = 30
+            ws.row_dimensions[row].height = 20
             index_rows.append(("שדה", tech, he, en, sname, f"D{row}"))
             row += 1
         fend = row - 1
 
-        def vmerge(col, val, *, bold=False, color="222222"):
+        def vmerge(col, val, *, bold=False, color=INK):
             cell = ws.cell(fstart, col, val)
-            cell.font = Font(bold=bold, size=9, color=color)
-            cell.alignment = Alignment(horizontal="right", vertical="top", wrap_text=True)
+            cell.font = Font(name=FONT_NAME, bold=bold, size=9, color=color)
+            cell.alignment = Alignment(horizontal=col_h(col), vertical="top", wrap_text=True)
             cell.border = BORDER
             if fend > fstart:
                 ws.merge_cells(start_row=fstart, start_column=col, end_row=fend, end_column=col)
-        vmerge(2, tbl["tcodes"], bold=True, color="1F3864")
-        vmerge(3, tbl["name"], bold=True, color="1F3864")
-        vmerge(7, funcs, bold=True, color="1F3864"); vmerge(8, fdesc)
-        vmerge(9, progs, bold=True, color="1F3864"); vmerge(10, pdesc)
-        vmerge(11, tbl["s4_status"], color="7B3F00"); vmerge(12, tbl["s4_repl"], color="7B3F00")
-        vmerge(13, tbl["s4_tcode"], color="7B3F00"); vmerge(14, tbl["fiori"], bold=True, color="C55A11")
-        vmerge(15, sum_note(tbl), color="7B1E2B")
+        vmerge(2, tbl["tcodes"], bold=True, color="2C5E8A")
+        vmerge(3, tbl["name"], bold=True, color="2C5E8A")
+        vmerge(7, funcs, bold=True, color="2C5E8A"); vmerge(8, fdesc)
+        vmerge(9, progs, bold=True, color="2C5E8A"); vmerge(10, pdesc)
+        vmerge(11, tbl["s4_status"], color="9A5A23"); vmerge(12, tbl["s4_repl"], color="9A5A23")
+        vmerge(13, tbl["s4_tcode"], color="9A5A23"); vmerge(14, tbl["fiori"], bold=True, color="B5651D")
+        vmerge(15, sum_note(tbl), color="9A5A23")
 
         for code in [x.strip() for x in tbl["tcodes"].replace(";", ",").replace("/", ",").split(",") if x.strip()]:
             index_rows.append(("טרנזקציה", code, tbl["he"], tbl["en"], sname, f"A{fstart}"))
@@ -366,32 +408,35 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
     row += 1
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOL)
     eh = ws.cell(row, 1, "  ⚙ הרחבות טכניות ושינויי ארכיטקטורה (Technical Extensions: User Exits / BAdIs / ECC vs S/4HANA)")
-    eh.font = Font(bold=True, size=11, color="FFFFFF")
-    eh.fill = PatternFill("solid", fgColor="7B1E2B")
+    eh.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF")
+    eh.fill = PatternFill("solid", fgColor=th["h"])
     eh.alignment = Alignment(horizontal="right", vertical="center")
-    ws.row_dimensions[row].height = 22
+    ws.row_dimensions[row].height = 24
     row += 1
     # sub-grid headers (3 cols: type | code | description spanning)
-    for lbl, c0, c1, fill in [("סוג (Type)", 1, 2, "A53444"), ("קוד / שם טכני (Code)", 3, 4, "A53444"),
-                              ("תיאור / הבדל (Hebrew)", 5, NCOL, "A53444")]:
+    for lbl, c0, c1 in [("סוג (Type)", 1, 2), ("קוד / שם טכני (Code)", 3, 4), ("תיאור / הבדל (Hebrew)", 5, NCOL)]:
         ws.merge_cells(start_row=row, start_column=c0, end_row=row, end_column=c1)
         c = ws.cell(row, c0, lbl)
-        c.font = Font(bold=True, size=9, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=fill)
+        c.font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=th["s"])
         c.alignment = Alignment(horizontal="center", vertical="center"); c.border = BORDER
     row += 1
 
     def ext_row(kind, code, desc, idx_type):
         global row
+        band = ZEBRA if (row % 2 == 0) else None
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=2)
-        a = ws.cell(row, 1, kind); a.font = Font(bold=True, size=9, color="7B1E2B")
+        a = ws.cell(row, 1, kind); a.font = Font(name=FONT_NAME, bold=True, size=9, color=th["h"])
         a.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); a.border = BORDER
+        if band: a.fill = PatternFill("solid", fgColor=band)
         ws.merge_cells(start_row=row, start_column=3, end_row=row, end_column=4)
-        b = ws.cell(row, 3, code); b.font = Font(bold=True, size=9, color="1F3864")
-        b.alignment = Alignment(horizontal="right", vertical="center", wrap_text=True); b.border = BORDER
+        b = ws.cell(row, 3, code); b.font = Font(name=FONT_NAME, bold=True, size=9, color="2C5E8A")
+        b.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True); b.border = BORDER
+        if band: b.fill = PatternFill("solid", fgColor=band)
         ws.merge_cells(start_row=row, start_column=5, end_row=row, end_column=NCOL)
-        d = ws.cell(row, 5, desc); d.font = Font(size=9, color="222222")
+        d = ws.cell(row, 5, desc); d.font = Font(name=FONT_NAME, size=9, color=INK)
         d.alignment = Alignment(horizontal="right", vertical="center", wrap_text=True); d.border = BORDER
-        ws.row_dimensions[row].height = 26
+        if band: d.fill = PatternFill("solid", fgColor=band)
+        ws.row_dimensions[row].height = 24
         if idx_type:
             index_rows.append((idx_type, code, desc, "", sname, f"A{row}"))
         row += 1
@@ -406,44 +451,126 @@ for topic_idx, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
 # ===========================================================================
 #  Simplification Item list sheet  (SAP Notes per PM/EAM object)
 # ===========================================================================
-simp = wb.create_sheet(SIMP_SHEET)
-simp.sheet_view.rightToLeft = True
-simp.sheet_view.showGridLines = True
-simp.sheet_properties.tabColor = S4_HDR
-simp.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
-back = simp.cell(1, 1, "▶ חזרה למסך ראשי")
-back.hyperlink = f"#'{DASH}'!A1"
-back.font = Font(bold=True, size=10, color="FFFFFF", underline="single")
-back.fill = PatternFill("solid", fgColor="404040")
-back.alignment = Alignment(horizontal="center", vertical="center")
-simp.merge_cells("B1:F1")
-st = simp.cell(1, 2, "Simplification Item List  -  SAP Notes למיגרציית PM / EAM ל-S/4HANA")
-st.font = Font(bold=True, size=13, color="FFFFFF"); st.fill = PatternFill("solid", fgColor=S4_HDR)
-st.alignment = Alignment(horizontal="right", vertical="center")
-simp.row_dimensions[1].height = 26
-simp_cols = [("מס' (#)", 6), ("תחום / אובייקט", 20), ("Simplification Item (כותרת הפריט)", 40),
-             ("SAP Note", 16), ("קטגוריה", 18), ("השפעה והמלצה (Impact & Action)", 60)]
-for j, (lbl, w) in enumerate(simp_cols, start=1):
-    c = simp.cell(2, j, lbl)
-    c.font = Font(bold=True, size=10, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="7B1E2B")
-    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); c.border = BORDER
-    simp.column_dimensions[get_column_letter(j)].width = w
-simp.row_dimensions[2].height = 34
-simp.freeze_panes = "A3"
+def new_sheet(name, tabcolor):
+    s = wb.create_sheet(name)
+    s.sheet_view.rightToLeft = True
+    s.sheet_view.showGridLines = True
+    s.sheet_properties.tabColor = tabcolor
+    s.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
+    return s
+
+def grid_header(ws, cols, fill):
+    for j, (lbl, w) in enumerate(cols, start=1):
+        c = ws.cell(2, j, lbl)
+        c.font = Font(name=FONT_NAME, bold=True, size=11, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor=fill)
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); c.border = BORDER
+        ws.column_dimensions[get_column_letter(j)].width = w
+    ws.row_dimensions[2].height = 28
+    ws.freeze_panes = "A3"
+
+# === Simplification Item list ===============================================
+simp = new_sheet(SIMP_SHEET, S4_HDR)
+add_back_button(simp, 6, "Simplification Item List  -  SAP Notes למיגרציית PM / EAM ל-S/4HANA")
+grid_header(simp, [("מס' (#)", 6), ("תחום / אובייקט", 20), ("Simplification Item (כותרת הפריט)", 42),
+                   ("SAP Note", 16), ("קטגוריה", 18), ("השפעה והמלצה (Impact & Action)", 62)], S4_HDR)
 rr = 3
 for i, (obj, title, note, cat, impact) in enumerate(SIMPLIFICATION, start=1):
-    band = S4_BAND if i % 2 == 0 else None
-    vals = [i, obj, title, note, cat, impact]
-    for j, v in enumerate(vals, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    for j, v in enumerate([i, obj, title, note, cat, impact], start=1):
         c = simp.cell(rr, j, v)
-        bold = j in (3, 4)
-        c.font = Font(bold=bold, size=10, color="1F3864" if j == 4 else "222222")
+        c.font = Font(name=FONT_NAME, bold=(j in (3, 4)), size=10, color="9A5A23" if j == 4 else INK)
         c.alignment = Alignment(horizontal=("center" if j in (1, 4) else "right"), vertical="top", wrap_text=True)
         c.border = BORDER
         if band: c.fill = PatternFill("solid", fgColor=band)
-    simp.row_dimensions[rr].height = 56
+    simp.row_dimensions[rr].height = 54
     index_rows.append(("SAP Note", note, title, obj, SIMP_SHEET, f"A{rr}"))
     rr += 1
+
+# === Cockpit - migration tracking ==========================================
+STATUSES = ["Not started", "In analysis", "In conversion", "Tested", "Done"]
+STATUS_FILL = {"Not started": "F1F5F9", "In analysis": "FFF2CC", "In conversion": "FCE2CD",
+               "Tested": "DCE6F4", "Done": "D6EFD8"}
+STATUS_TXT = {"Not started": "475569", "In analysis": "92722A", "In conversion": "9A5A23",
+              "Tested": "2C5E8A", "Done": "1E5A44"}
+cock = new_sheet(COCKPIT, DASH_HDR)
+add_back_button(cock, 9, "Cockpit מעקב מיגרציה  -  Migration Tracking (NEO Project)")
+cock_cols = [("מס' (#)", 6), ("מודול / נושא", 26), ("אובייקט / טבלה", 16), ("סטטוס מעבר (Status)", 18),
+             ("אחראי (Owner)", 16), ("תאריך יעד", 13), ("תאריך סיום", 13),
+             ("הערות / בלוקרים", 34), ("קישור לגיליון", 14)]
+grid_header(cock, cock_cols, DASH_HDR)
+rr = 3
+for i, (tname, the, ttitle, tsheet, tcell, ttheme) in enumerate(tables_meta, start=1):
+    band = ZEBRA if i % 2 == 0 else None
+    vals = [i, f"{ttitle}  -  {the}", tname, "Not started", "", "", "", "", None]
+    for j, v in enumerate(vals, start=1):
+        c = cock.cell(rr, j, v if v is not None else "")
+        c.font = Font(name=FONT_NAME, bold=(j == 3), size=10,
+                      color="2C5E8A" if j == 3 else INK)
+        c.alignment = Alignment(horizontal=("center" if j in (1, 4, 6, 7, 9) else ("left" if j == 3 else "right")),
+                                vertical="center", wrap_text=True)
+        c.border = BORDER
+        if band: c.fill = PatternFill("solid", fgColor=band)
+    # status default styling
+    sc = cock.cell(rr, 4); sc.fill = PatternFill("solid", fgColor=STATUS_FILL["Not started"])
+    sc.font = Font(name=FONT_NAME, bold=True, size=10, color=STATUS_TXT["Not started"])
+    lk = cock.cell(rr, 9); lk.value = f'=HYPERLINK("#\'"&"{tsheet}"&"\'!{tcell}","➜ פתח")'
+    lk.font = Font(name=FONT_NAME, color="0563C1", underline="single", size=9)
+    cock.row_dimensions[rr].height = 22
+    rr += 1
+cock_last = rr - 1
+dv = DataValidation(type="list", formula1='"%s"' % ",".join(STATUSES), allow_blank=True)
+dv.error = "בחר סטטוס מהרשימה"; dv.prompt = "בחר סטטוס מעבר"
+cock.add_data_validation(dv); dv.add(f"D3:D{cock_last}")
+for st_name, fillc in STATUS_FILL.items():
+    cock.conditional_formatting.add(f"D3:D{cock_last}",
+        CellIsRule(operator="equal", formula=[f'"{st_name}"'],
+                   fill=PatternFill("solid", fgColor=fillc),
+                   font=Font(name=FONT_NAME, bold=True, color=STATUS_TXT[st_name])))
+
+# === Custom Code Check =====================================================
+CCC_STATUS = ["To review", "In progress", "Adapted", "OK - no change", "Obsolete"]
+CCC_FILL = {"To review": "FFF2CC", "In progress": "FCE2CD", "Adapted": "DCE6F4",
+            "OK - no change": "D6EFD8", "Obsolete": "F1F5F9"}
+CCC_TXT = {"To review": "92722A", "In progress": "9A5A23", "Adapted": "2C5E8A",
+           "OK - no change": "1E5A44", "Obsolete": "475569"}
+ccc = new_sheet(CCC, "B5651D")
+add_back_button(ccc, 9, "Custom Code Check  -  בדיקת User Exits / BAdIs למעבר S/4HANA")
+ccc_cols = [("מס' (#)", 6), ("מודול / נושא", 24), ("סוג (Type)", 16), ("קוד / שם טכני", 22),
+            ("תיאור (Hebrew)", 34), ("סטטוס בדיקה", 16), ("המלצת מעבר ל-S/4", 30),
+            ("אחראי (Owner)", 14), ("הערות", 22)]
+grid_header(ccc, ccc_cols, "B5651D")
+rr = 3
+EXIT_REC = "בדוק ב-Custom Code Migration (SCMON/ATC); שקול מעבר ל-BAdI/Enhancement Spot מודרני."
+BADI_REC = "אמת תאימות ה-BAdI ב-S/4 (SPAU_ENH); ודא חתימה ומימוש אקטיבי לאחר השדרוג."
+for ti, (topic, sname) in enumerate(zip(TOPICS, sheet_names)):
+    ext = EXTENSIONS[ti]
+    for kind, rec, lst in [("User Exit", EXIT_REC, ext["exits"]), ("BAdI", BADI_REC, ext["badis"])]:
+        for code, desc in lst:
+            i = rr - 2
+            band = ZEBRA if i % 2 == 0 else None
+            vals = [i, topic["title"], kind, code, desc, "To review", rec, "", ""]
+            for j, v in enumerate(vals, start=1):
+                c = ccc.cell(rr, j, v)
+                c.font = Font(name=FONT_NAME, bold=(j == 4), size=10,
+                              color="2C5E8A" if j == 4 else INK)
+                c.alignment = Alignment(horizontal=("center" if j in (1, 3, 6, 8) else ("left" if j == 4 else "right")),
+                                        vertical="center", wrap_text=True)
+                c.border = BORDER
+                if band: c.fill = PatternFill("solid", fgColor=band)
+            scc = ccc.cell(rr, 6); scc.fill = PatternFill("solid", fgColor=CCC_FILL["To review"])
+            scc.font = Font(name=FONT_NAME, bold=True, size=10, color=CCC_TXT["To review"])
+            ccc.row_dimensions[rr].height = 26
+            index_rows.append((kind, code, desc, topic["title"], CCC, f"D{rr}"))
+            rr += 1
+ccc_last = rr - 1
+dv2 = DataValidation(type="list", formula1='"%s"' % ",".join(CCC_STATUS), allow_blank=True)
+ccc.add_data_validation(dv2); dv2.add(f"F3:F{ccc_last}")
+for st_name, fillc in CCC_FILL.items():
+    ccc.conditional_formatting.add(f"F3:F{ccc_last}",
+        CellIsRule(operator="equal", formula=[f'"{st_name}"'],
+                   fill=PatternFill("solid", fgColor=fillc),
+                   font=Font(name=FONT_NAME, bold=True, color=CCC_TXT[st_name])))
 
 # ---- pandas index frame (drives both the FILTER formula and the macro) ----
 df_index = pd.DataFrame(index_rows, columns=["סוג", "קוד", "עברית", "English", "גיליון", "תא"])
@@ -453,26 +580,32 @@ N = len(df_index)
 # 4) Dashboard
 # ===========================================================================
 dash.sheet_view.rightToLeft = True
-dash.sheet_view.showGridLines = True
-dash.sheet_properties.tabColor = "111111"
+dash.sheet_view.showGridLines = False
+dash.sheet_properties.tabColor = DASH_HDR
 for col, w in zip("ABCDEFGHIJKLMNO", [3,16,16,16,16,16,4,16,16,3,3,3,3,3,3]):
     dash.column_dimensions[col].width = w
+# soft-grey dashboard backdrop
+for rfill in range(1, 57):
+    for cfill in range(1, 16):
+        dash.cell(rfill, cfill).fill = PatternFill("solid", fgColor=DASH_BG)
 
-dash.merge_cells("B2:F2")
+dash.merge_cells("B2:H2")
 d1 = dash.cell(2, 2, "SAP PM  -  מסך ניווט מרכזי  |  גשר מעבר ECC 6.0 ➜ S/4HANA")
-d1.font = Font(bold=True, size=16, color="1F3864"); d1.alignment = Alignment(horizontal="right")
-dash.merge_cells("B3:F3")
+d1.font = Font(name=FONT_NAME, bold=True, size=18, color=DASH_HDR); d1.alignment = Alignment(horizontal="right")
+dash.merge_cells("B3:H3")
 d2 = dash.cell(3, 2, "Interactive Migration-Ready Workbook  -  Plant Maintenance / EAM")
-d2.font = Font(bold=True, size=10, color="7F7F7F"); d2.alignment = Alignment(horizontal="right")
+d2.font = Font(name=FONT_NAME, bold=True, size=10, color="64748B"); d2.alignment = Alignment(horizontal="right")
 
-dash.merge_cells("B5:F5")
+dash.merge_cells("B5:H5")
 nh = dash.cell(5, 2, "ניווט מהיר לגיליונות  (לחץ על כרטיס כדי לעבור)")
-nh.font = Font(bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor="1F3864")
+nh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor=DASH_HDR)
 nh.alignment = Alignment(horizontal="right")
 
 card_cols = [2, 4, 6, 8]                # 4 cards per row (cols B, D, F, H)
 nav_items = [(t["title"], sn, TH[t["theme"]]["h"]) for t, sn in zip(TOPICS, sheet_names)]
-nav_items.append(("★ " + SIMP_SHEET + " (SAP Notes)", SIMP_SHEET, S4_HDR))
+nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, S4_HDR))
+nav_items.append(("◆ " + COCKPIT, COCKPIT, DASH_HDR))
+nav_items.append(("⚙ " + CCC, CCC, "B5651D"))
 r = 6
 for i, (title, sn, hdr) in enumerate(nav_items):
     slot = i % 4
@@ -487,9 +620,10 @@ for i, (title, sn, hdr) in enumerate(nav_items):
     for rr in (r, r+1): dash.cell(rr, c0).border = BORDER
 r += 3
 
-dash.merge_cells(start_row=r, start_column=2, end_row=r, end_column=6)
-lg = dash.cell(r, 2, "מקרא:  כחול=נתוני אב | ירוק=תנועתי | בורדו=קונפיגורציה | כתום/אדום=מיגרציית S/4HANA")
-lg.font = Font(italic=True, size=9, color="404040"); lg.alignment = Alignment(horizontal="right")
+dash.merge_cells(start_row=r, start_column=2, end_row=r, end_column=8)
+lg = dash.cell(r, 2, "מקרא:  כחול-פלדה=נתוני אב | ירוק אמרלד=תנועתי | סלייט=קונפיגורציה | טורקיז=אינטגרציה | נחושת=עמודות S/4HANA")
+lg.font = Font(name=FONT_NAME, italic=True, size=9, color="64748B"); lg.alignment = Alignment(horizontal="right")
+lg.fill = PatternFill("solid", fgColor=DASH_BG)
 
 # --- search block (row 20 header, row 21 box) ---
 dash.merge_cells("B20:F20")
@@ -550,15 +684,29 @@ for k in range(7):
     dash.column_dimensions[get_column_letter(IDX_COL0 + k)].hidden = True   # hide the index block
 
 # instructions / note
-dash.merge_cells("B50:F54")
+dash.merge_cells("B50:H54")
 note = dash.cell(50, 2,
-  "איך עובדים:  1) לחץ כרטיס למעבר לגיליון.  2) הקלד מונח בתא הצהוב ולחץ על כפתור 'חיפוש' (מאקרו) "
-  "או פשוט צפה בתוצאות הדינמיות מתחת (FILTER).  3) בכל גיליון יש כפתור 'חזרה למסך ראשי' בפינה.  "
-  "החיפוש יונק מבלוק INDEX_DB המוסתר בעמודות P:V של גיליון זה.  "
+  "איך עובדים:  1) לחץ כרטיס למעבר לגיליון (כולל Cockpit מעקב מיגרציה ו-Custom Code Check).  "
+  "2) הקלד מונח בתא הצהוב ולחץ על כפתור 'חיפוש' (מאקרו) או צפה בתוצאות הדינמיות מתחת (FILTER).  "
+  "3) בכל גיליון יש כפתור 'חזרה למסך הראשי' בפינה הימנית-עליונה.  "
+  "ב-Cockpit וב-Custom Code Check יש עמודות סטטוס עם רשימה נפתחת וצביעה אוטומטית.  "
   "אם Excel חוסם מאקרו - אשר 'Enable Content'; אם נדרש, ייבא את modPM.bas (Alt+F11 -> Import).")
-note.font = Font(italic=True, size=9, color="7B1E2B")
+note.font = Font(name=FONT_NAME, italic=True, size=9, color="475569")
 note.alignment = Alignment(horizontal="right", vertical="top", wrap_text=True)
+note.fill = PatternFill("solid", fgColor="EEF2F7")
+note.border = BORDER
 dash.freeze_panes = "A2"
+
+# ---------------------------------------------------------------------------
+#  Universal typography pass - apply the modern font family to every cell
+# ---------------------------------------------------------------------------
+for sh in wb.worksheets:
+    for rowcells in sh.iter_rows():
+        for cell in rowcells:
+            ftn = cell.font
+            if ftn is not None and ftn.name != FONT_NAME:
+                cell.font = Font(name=FONT_NAME, size=ftn.size, bold=ftn.bold,
+                                 italic=ftn.italic, color=ftn.color, underline=ftn.underline)
 
 # ===========================================================================
 # 5) Save .xlsx then inject VBA + Form Control button -> .xlsm
