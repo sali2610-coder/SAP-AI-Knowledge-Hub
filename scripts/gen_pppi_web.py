@@ -8,7 +8,7 @@ Run:  python3 scripts/gen_pppi_web.py   ->  index_pppi.html
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pppi_data import TOPICS
+from pppi_data import TOPICS, OPS
 
 topics, cockpit, joins = [], [], []
 for ti, t in enumerate(TOPICS):
@@ -23,7 +23,8 @@ for ti, t in enumerate(TOPICS):
         cockpit.append({"table": tb["name"], "he": tb["he"], "topic": t["title"]})
         if tb["join"].startswith("FROM"):
             joins.append({"table": tb["name"], "join": tb["join"], "he": tb["he"]})
-    topics.append({"idx": ti, "title": t["title"], "theme": t["theme"], "tables": tabs})
+    topics.append({"idx": ti, "title": t["title"], "theme": t["theme"], "tables": tabs,
+                   "ops": {"tcodes": OPS[ti]["tcodes"], "interfaces": OPS[ti]["interfaces"], "programs": OPS[ti]["programs"]}})
 
 DATA = {"topics": topics, "cockpit": cockpit, "joins": joins,
         "statuses": ["Not started", "In analysis", "In conversion", "Tested", "Done"]}
@@ -134,9 +135,22 @@ function fieldTable(tb){
    <td data-label="English">${esc(f.en)}</td><td data-label="עברית">${esc(f.he)}</td></tr>`).join("");
  return `<div class="overflow-x-auto"><table class="resp"><thead><tr><th>שדה טכני</th><th>Type</th><th>Len</th><th>Key</th><th>English</th><th>עברית</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
+function opsBlock(ops){
+ const tm=ops.tcodes.map(x=>`<tr><td data-label="ECC"><code>${esc(x[0])}</code></td><td data-label="Fiori App">${esc(x[1])}</td><td data-label="Fiori ID">${fioriLink(x[2])}</td></tr>`).join("");
+ const ic=ops.interfaces.map(x=>`<tr><td data-label="Type"><b style="color:#D62027">${esc(x[0])}</b></td><td data-label="Name"><code>${esc(x[1])}</code></td><td data-label="תיאור">${esc(x[2])}</td></tr>`).join("");
+ const pg=ops.programs.map(x=>`<tr><td data-label="Program"><code>${esc(x[0])}</code></td><td data-label="תיאור">${esc(x[1])}</td></tr>`).join("");
+ const blk=(t,h)=>`<div><div class="font-bold mb-1 text-sm" style="color:#1E1E24">${t}</div><div class="overflow-x-auto"><table class="resp text-xs">${h}</table></div></div>`;
+ return `<div class="bg-white rounded-xl shadow-sm mb-4 border overflow-hidden" style="border-color:#E5E7EB">
+   <div class="text-white px-3 py-2 font-bold" style="background:#D62027">🔧 שכבה תפעולית (Operational Layer) - T-codes ◄► Fiori | ממשקים BAPI/IDoc/RFC | תוכניות רקע</div>
+   <div class="p-3 grid md:grid-cols-3 gap-4">
+     ${blk('T-codes ◄► Fiori App','<thead><tr><th>ECC T-code</th><th>S/4 Fiori App</th><th>Fiori ID</th></tr></thead><tbody>'+tm+'</tbody>')}
+     ${blk('ממשקים (BAPI / IDoc / RFC)','<thead><tr><th>Type</th><th>Name</th><th>תיאור</th></tr></thead><tbody>'+ic+'</tbody>')}
+     ${blk('תוכניות רקע ודוחות','<thead><tr><th>Program</th><th>תיאור ומטרה</th></tr></thead><tbody>'+pg+'</tbody>')}
+   </div></div>`;
+}
 function viewTopic(i){
  const t=DATA.topics[i];
- return t.tables.map((tb,ix)=>`
+ return opsBlock(t.ops) + t.tables.map((tb,ix)=>`
   <div class="acc bg-white rounded-xl shadow-sm mb-3 border overflow-hidden" style="border-color:#E5E7EB" id="acc_${i}_${ix}">
     <button class="w-full text-right px-3 py-2 font-bold text-white flex items-center justify-between" style="background:#1E1E24" onclick="this.parentElement.classList.toggle('open')">
       <span><span class="chev ml-2">▸</span>◆ ${esc(tb.name)} <span class="opacity-70 font-normal text-xs">${esc(tb.he)} (${esc(tb.en)})</span></span>

@@ -18,7 +18,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.utils import get_column_letter
-from pppi_data import TOPICS
+from pppi_data import TOPICS, OPS
 
 # ---- CBC brand palette ----
 FONT = "Segoe UI"; RED = "D62027"; REDHOT = "F40009"; SLATE = "1E1E24"; SLATE2 = "2B2B33"
@@ -64,6 +64,70 @@ MACRO_SRC = (
 'End Sub\n'
 )
 
+def fiori_url(fid):
+    return f"https://fioriappslibrary.hana.ondemand.com/sap/fix/externalViewer/#/detail/Apps('{fid}')" if (fid and fid[0] == "F") else None
+
+def merged_row(ws, row, segs, h=18):
+    # segs: list of (c0,c1,val,bold,align,color,mono,link)
+    for (c0, c1, val, bold, al, color, mono, link) in segs:
+        ws.merge_cells(start_row=row, start_column=c0, end_row=row, end_column=c1)
+        cell = ws.cell(row, c0, val)
+        cell.font = Font(name=("Consolas" if mono else FONT), size=9, bold=bold,
+                         color=("0563C1" if link else color), underline=("single" if link else None))
+        cell.alignment = Alignment(horizontal=al, vertical="center", wrap_text=True); cell.border = BORDER
+        if link: cell.hyperlink = link
+    ws.row_dimensions[row].height = h
+
+def render_ops(ws, ops, row, sname):
+    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOL)
+    c = ws.cell(row, 1, "  🔧 שכבה תפעולית (Operational Layer)  -  T-codes ◄► Fiori  |  ממשקים BAPI/IDoc/RFC  |  תוכניות רקע ודוחות")
+    c.font = f(11, True, "FFFFFF"); c.fill = PatternFill("solid", fgColor=RED); c.alignment = Alignment("right", "center")
+    ws.row_dimensions[row].height = 22; row += 1
+    def subhdr(text):
+        nonlocal row
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOL)
+        cc = ws.cell(row, 1, "    " + text); cc.font = f(10, True, "FFFFFF"); cc.fill = PatternFill("solid", fgColor=SLATE2)
+        cc.alignment = Alignment("right", "center"); ws.row_dimensions[row].height = 18; row += 1
+    # ---- T-code <-> Fiori mapping ----
+    subhdr("מיפוי T-code ◄► Fiori App (ECC ◄► S/4HANA)")
+    merged_row(ws, row, [(1, 3, "ECC T-code", True, "center", "FFFFFF", False, None),
+                         (4, 8, "S/4HANA Fiori App", True, "center", "FFFFFF", False, None),
+                         (9, 12, "Fiori ID", True, "center", "FFFFFF", False, None)])
+    for s in (ws.cell(row, 1), ws.cell(row, 4), ws.cell(row, 9)): s.fill = PatternFill("solid", fgColor=SILVER)
+    for s in (ws.cell(row, 1), ws.cell(row, 4), ws.cell(row, 9)): s.font = f(9, True, SILVER_TX)
+    row += 1
+    for ecc, app, fid in ops["tcodes"]:
+        lk = fiori_url(fid)
+        merged_row(ws, row, [(1, 3, ecc, True, "left", RED, True, None),
+                             (4, 8, app, False, "right", INK, False, None),
+                             (9, 12, fid, True, "center", SLATE, False, lk)])
+        index_rows.append(("טרנזקציה", ecc.split()[0], app, fid, sname, f"A{row}"))
+        if fid and fid != "-": index_rows.append(("Fiori", fid, app, "", sname, f"A{row}"))
+        row += 1
+    # ---- Interfaces ----
+    subhdr("ממשקים ובלוקים פונקציונליים: BAPIs / IDocs / RFCs (Extraction & Messaging)")
+    merged_row(ws, row, [(1, 2, "Type", True, "center", "FFFFFF", False, None),
+                         (3, 6, "Name", True, "center", "FFFFFF", False, None),
+                         (7, 12, "תיאור / Description", True, "center", "FFFFFF", False, None)])
+    for cc in (1, 3, 7): ws.cell(row, cc).fill = PatternFill("solid", fgColor=SILVER); ws.cell(row, cc).font = f(9, True, SILVER_TX)
+    row += 1
+    for kind, name, desc in ops["interfaces"]:
+        merged_row(ws, row, [(1, 2, kind, True, "center", RED, False, None),
+                             (3, 6, name, True, "left", SLATE, True, None),
+                             (7, 12, desc, False, "right", INK, False, None)])
+        index_rows.append((kind, name, desc, "", sname, f"A{row}")); row += 1
+    # ---- Background programs ----
+    subhdr("תוכניות רקע ודוחות סטנדרטיים (Background Programs / Reports)")
+    merged_row(ws, row, [(1, 4, "Program / Report", True, "center", "FFFFFF", False, None),
+                         (5, 12, "תיאור ומטרה / Usage & Trigger", True, "center", "FFFFFF", False, None)])
+    for cc in (1, 5): ws.cell(row, cc).fill = PatternFill("solid", fgColor=SILVER); ws.cell(row, cc).font = f(9, True, SILVER_TX)
+    row += 1
+    for name, desc in ops["programs"]:
+        merged_row(ws, row, [(1, 4, name, True, "left", SLATE, True, None),
+                             (5, 12, desc, False, "right", INK, False, None)])
+        index_rows.append(("תוכנית", name, desc, "", sname, f"A{row}")); row += 1
+    return row + 1
+
 wb = Workbook(); wb.remove(wb.active)
 def safe(n):
     for ch in ':\\/?*[]': n = n.replace(ch, "")
@@ -84,7 +148,7 @@ def back_btn(ws, ncol, title):
     t.alignment = Alignment(horizontal="center", vertical="center"); ws.row_dimensions[1].height = 30
 
 # ---- data sheets ----
-for topic, sname in zip(TOPICS, sheet_names):
+for topic, sname, ops in zip(TOPICS, sheet_names, OPS):
     ws = wb.create_sheet(sname); ws.sheet_view.rightToLeft = True; ws.sheet_view.showGridLines = True
     ws.sheet_properties.tabColor = TAB[topic["theme"]]
     ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
@@ -96,7 +160,7 @@ for topic, sname in zip(TOPICS, sheet_names):
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True); c.border = BORDER
         ws.column_dimensions[get_column_letter(j)].width = w
     ws.row_dimensions[2].height = 28; ws.freeze_panes = "A3"
-    row = 3; seq = 0
+    row = render_ops(ws, ops, 3, sname); seq = 0
     for tb in topic["tables"]:
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOL)
         hc = ws.cell(row, 1, f"  ◆ טבלה {tb['name']}  -  {tb['he']}  ({tb['en']})   |   T-codes: {tb['tcodes']}")
