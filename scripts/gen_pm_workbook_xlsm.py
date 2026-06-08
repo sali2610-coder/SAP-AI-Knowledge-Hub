@@ -71,7 +71,7 @@ TH = {
  "cross":  {"h": "2F6F6A", "s": "40837D", "b": ZEBRA, "t": "2F6F6A"},   # Deep Teal
 }
 
-SEARCH_CELL = "C21"          # visible search box (must match the macro)
+SEARCH_CELL = "C25"          # visible search box (must match the macro & VML anchor)
 IDX_COL0 = 16                # column P - first index column (hidden block on dashboard)
 
 # 15th column appended on the LEFT (RTL) = SUM/migration note
@@ -528,6 +528,45 @@ for st_name, fillc in STATUS_FILL.items():
                    fill=PatternFill("solid", fgColor=fillc),
                    font=Font(name=FONT_NAME, bold=True, color=STATUS_TXT[st_name])))
 
+# --- status summary table (cols K:L) + dynamic doughnut chart on the Cockpit ---
+from openpyxl.chart import DoughnutChart, BarChart, Reference
+from openpyxl.chart.series import DataPoint
+from openpyxl.chart.label import DataLabelList
+from openpyxl.drawing.fill import PatternFillProperties, ColorChoice
+
+cock.cell(2, 11, "סטטוס (Status)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+cock.cell(2, 12, "כמות (Count)").font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+for cc_ in (11, 12):
+    cock.cell(2, cc_).fill = PatternFill("solid", fgColor=DASH_HDR)
+    cock.cell(2, cc_).alignment = Alignment(horizontal="center", vertical="center")
+    cock.cell(2, cc_).border = BORDER
+for k, stt in enumerate(STATUSES):
+    rk = 3 + k
+    a = cock.cell(rk, 11, stt); a.font = Font(name=FONT_NAME, bold=True, size=10, color=STATUS_TXT[stt])
+    a.fill = PatternFill("solid", fgColor=STATUS_FILL[stt]); a.alignment = Alignment(horizontal="right")
+    a.border = BORDER
+    b = cock.cell(rk, 12, f'=COUNTIF($D$3:$D${cock_last},$K{rk})')
+    b.font = Font(name=FONT_NAME, bold=True, size=11, color=INK); b.alignment = Alignment(horizontal="center")
+    b.border = BORDER
+trow = 3 + len(STATUSES)
+cock.cell(trow, 11, 'סה"כ').font = Font(name=FONT_NAME, bold=True, size=10, color="FFFFFF")
+cock.cell(trow, 11).fill = PatternFill("solid", fgColor="64748B"); cock.cell(trow, 11).border = BORDER
+cock.cell(trow, 11).alignment = Alignment(horizontal="right")
+tt = cock.cell(trow, 12, f'=SUM($L$3:$L${trow-1})'); tt.font = Font(name=FONT_NAME, bold=True, size=11, color=INK)
+tt.alignment = Alignment(horizontal="center"); tt.border = BORDER
+cock.column_dimensions["K"].width = 16; cock.column_dimensions["L"].width = 12
+
+donut = DoughnutChart(); donut.title = "התפלגות סטטוס מיגרציה"; donut.holeSize = 55
+data = Reference(cock, min_col=12, min_row=2, max_row=trow - 1)      # L2:L7 (header+5)
+cats = Reference(cock, min_col=11, min_row=3, max_row=trow - 1)      # K3:K7
+donut.add_data(data, titles_from_data=True); donut.set_categories(cats)
+for k, stt in enumerate(STATUSES):                                   # colour slices per status
+    pt = DataPoint(idx=k); pt.graphicalProperties.solidFill = STATUS_FILL[stt]
+    donut.series[0].data_points.append(pt)
+donut.dataLabels = DataLabelList(); donut.dataLabels.showVal = True
+donut.height = 7.5; donut.width = 11
+cock.add_chart(donut, "K11")
+
 # === Custom Code Check =====================================================
 CCC_STATUS = ["To review", "In progress", "Adapted", "OK - no change", "Obsolete"]
 CCC_FILL = {"To review": "FFF2CC", "In progress": "FCE2CD", "Adapted": "DCE6F4",
@@ -585,7 +624,7 @@ dash.sheet_properties.tabColor = DASH_HDR
 for col, w in zip("ABCDEFGHIJKLMNO", [3,16,16,16,16,16,4,16,16,3,3,3,3,3,3]):
     dash.column_dimensions[col].width = w
 # soft-grey dashboard backdrop
-for rfill in range(1, 57):
+for rfill in range(1, 63):
     for cfill in range(1, 16):
         dash.cell(rfill, cfill).fill = PatternFill("solid", fgColor=DASH_BG)
 
@@ -596,8 +635,55 @@ dash.merge_cells("B3:H3")
 d2 = dash.cell(3, 2, "Interactive Migration-Ready Workbook  -  Plant Maintenance / EAM")
 d2.font = Font(name=FONT_NAME, bold=True, size=10, color="64748B"); d2.alignment = Alignment(horizontal="right")
 
+# ---------------------------------------------------------------------------
+#  KPI strip (top) - live counts from the Cockpit status column
+# ---------------------------------------------------------------------------
+CR = f"'{COCKPIT}'"                                   # quoted cockpit sheet ref
+TOTcnt  = f"COUNTA({CR}!$C$3:$C${cock_last})"
+DONEcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Done")'
+TESTcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Tested")'
+PROGcnt = f'(COUNTIF({CR}!$D$3:$D${cock_last},"In analysis")+COUNTIF({CR}!$D$3:$D${cock_last},"In conversion"))'
+OPENcnt = f'COUNTIF({CR}!$D$3:$D${cock_last},"Not started")'
+
 dash.merge_cells("B5:H5")
-nh = dash.cell(5, 2, "ניווט מהיר לגיליונות  (לחץ על כרטיס כדי לעבור)")
+kh = dash.cell(5, 2, "סיכום התקדמות מיגרציה  (KPI - מתעדכן אוטומטית מ-Cockpit)")
+kh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); kh.fill = PatternFill("solid", fgColor=DASH_HDR)
+kh.alignment = Alignment(horizontal="right")
+
+# 6 KPI tiles across B..G (number row 6, label row 7)
+kpis = [("סה\"כ אובייקטים", f"={TOTcnt}", "2C5E8A", "EAF0F6"),
+        ("הושלם (Done)", f"={DONEcnt}", "1E5A44", "D6EFD8"),
+        ("נבדק (Tested)", f"={TESTcnt}", "2C5E8A", "DCE6F4"),
+        ("בתהליך (In Progress)", f"={PROGcnt}", "9A5A23", "FCE2CD"),
+        ("פתוח (Open)", f"={OPENcnt}", "475569", "F1F5F9"),
+        ("% השלמה", f"=IFERROR(({DONEcnt})/({TOTcnt}),0)", "B5651D", "FBE9DA")]
+for k, (lbl, formula_v, txt, fillc) in enumerate(kpis):
+    cc = 2 + k
+    num = dash.cell(6, cc, formula_v)
+    num.font = Font(name=FONT_NAME, bold=True, size=20, color=txt)
+    num.alignment = Alignment(horizontal="center", vertical="center")
+    num.fill = PatternFill("solid", fgColor=fillc)
+    num.border = BORDER
+    if "%" in lbl:
+        num.number_format = "0%"
+    lab = dash.cell(7, cc, lbl)
+    lab.font = Font(name=FONT_NAME, bold=True, size=9, color=txt)
+    lab.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    lab.fill = PatternFill("solid", fgColor=fillc)
+    lab.border = BORDER
+dash.row_dimensions[6].height = 30
+dash.row_dimensions[7].height = 22
+
+# progress bar chart (anchored right, references the Cockpit summary - dynamic)
+bar = BarChart(); bar.type = "bar"; bar.title = "התקדמות לפי סטטוס"; bar.legend = None
+bdata = Reference(cock, min_col=12, min_row=2, max_row=2 + len(STATUSES))
+bcats = Reference(cock, min_col=11, min_row=3, max_row=2 + len(STATUSES))
+bar.add_data(bdata, titles_from_data=True); bar.set_categories(bcats)
+bar.height = 5.2; bar.width = 11
+dash.add_chart(bar, "J5")
+
+dash.merge_cells("B9:H9")
+nh = dash.cell(9, 2, "ניווט מהיר לגיליונות  (לחץ על כרטיס כדי לעבור)")
 nh.font = Font(name=FONT_NAME, bold=True, size=12, color="FFFFFF"); nh.fill = PatternFill("solid", fgColor=DASH_HDR)
 nh.alignment = Alignment(horizontal="right")
 
@@ -606,7 +692,7 @@ nav_items = [(t["title"], sn, TH[t["theme"]]["h"]) for t, sn in zip(TOPICS, shee
 nav_items.append(("★ " + SIMP_SHEET, SIMP_SHEET, S4_HDR))
 nav_items.append(("◆ " + COCKPIT, COCKPIT, DASH_HDR))
 nav_items.append(("⚙ " + CCC, CCC, "B5651D"))
-r = 6
+r = 10
 for i, (title, sn, hdr) in enumerate(nav_items):
     slot = i % 4
     if slot == 0 and i != 0: r += 3
@@ -625,25 +711,26 @@ lg = dash.cell(r, 2, "מקרא:  כחול-פלדה=נתוני אב | ירוק א
 lg.font = Font(name=FONT_NAME, italic=True, size=9, color="64748B"); lg.alignment = Alignment(horizontal="right")
 lg.fill = PatternFill("solid", fgColor=DASH_BG)
 
-# --- search block (row 20 header, row 21 box) ---
-dash.merge_cells("B20:F20")
-sh = dash.cell(20, 2, "🔍 חיפוש גלובלי  (טבלה / טרנזקציה / שדה / פונקציה - עברית או אנגלית)")
+# --- search block (row 24 header, row 25 box) ---
+dash.merge_cells("B24:F24")
+sh = dash.cell(24, 2, "🔍 חיפוש גלובלי  (טבלה / טרנזקציה / שדה / פונקציה - עברית או אנגלית)")
 sh.font = Font(bold=True, size=12, color="FFFFFF"); sh.fill = PatternFill("solid", fgColor=S4_HDR)
 sh.alignment = Alignment(horizontal="right")
-lbl = dash.cell(21, 2, "הקלד כאן:")
+lbl = dash.cell(25, 2, "הקלד כאן:")
 lbl.font = Font(bold=True, size=11); lbl.alignment = Alignment(horizontal="right")
-dash.merge_cells("C21:F21")
-sc = dash.cell(21, 3, "")
+lbl.fill = PatternFill("solid", fgColor=DASH_BG)
+dash.merge_cells("C25:F25")
+sc = dash.cell(25, 3, "")
 sc.fill = PatternFill("solid", fgColor="FFF2CC")
 sc.font = Font(bold=True, size=12, color="1F3864")
 med = Side(style="medium", color="C55A11")
 sc.border = Border(left=med, right=med, top=med, bottom=med)
-dash.row_dimensions[21].height = 26
+dash.row_dimensions[25].height = 26
 
-# results header (row 23) + FILTER (row 24, spills) - reads the on-sheet index block
+# results header (row 27) + FILTER (row 28, spills) - reads the on-sheet index block
 res_hdrs = ["קישור", "קוד / שם טכני", "פירוש בעברית", "English", "גיליון", "תא"]
 for j, h in enumerate(res_hdrs):
-    c = dash.cell(23, 2 + j, h)
+    c = dash.cell(27, 2 + j, h)
     c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="404040")
     c.alignment = Alignment(horizontal="center"); c.border = BORDER
 
@@ -656,7 +743,7 @@ formula = (
  f'(ISNUMBER(SEARCH({SEARCH_CELL},{rng(3)})))+(ISNUMBER(SEARCH({SEARCH_CELL},{rng(0)})))>0),'
  f'"לא נמצאו תוצאות - נסה מונח אחר"))'
 )
-fcell = dash.cell(24, 2, formula)
+fcell = dash.cell(28, 2, formula)
 fcell.font = Font(size=10); fcell.alignment = Alignment(horizontal="right")
 
 # --- embedded INDEX_DB block on the dashboard (hidden cols P:V) ---
@@ -684,8 +771,8 @@ for k in range(7):
     dash.column_dimensions[get_column_letter(IDX_COL0 + k)].hidden = True   # hide the index block
 
 # instructions / note
-dash.merge_cells("B50:H54")
-note = dash.cell(50, 2,
+dash.merge_cells("B56:H60")
+note = dash.cell(56, 2,
   "איך עובדים:  1) לחץ כרטיס למעבר לגיליון (כולל Cockpit מעקב מיגרציה ו-Custom Code Check).  "
   "2) הקלד מונח בתא הצהוב ולחץ על כפתור 'חיפוש' (מאקרו) או צפה בתוצאות הדינמיות מתחת (FILTER).  "
   "3) בכל גיליון יש כפתור 'חזרה למסך הראשי' בפינה הימנית-עליונה.  "
@@ -728,14 +815,14 @@ VML = (
 '<v:shapetype id="_x0000_t201" coordsize="21600,21600" o:spt="201" path="m,l,21600r21600,l21600,xe">'
 '<v:stroke joinstyle="miter"/><v:path shadowok="f" o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>'
 '</v:shapetype>'
-'<v:shape id="SearchBtn" type="#_x0000_t201" style="position:absolute;margin-left:520px;margin-top:300px;'
+'<v:shape id="SearchBtn" type="#_x0000_t201" style="position:absolute;margin-left:300px;margin-top:495px;'
 'width:120px;height:30px;z-index:1" o:button="t" fillcolor="#c55a11" strokecolor="#7b1e2b">'
 '<v:fill o:detectmouseclick="t"/><o:lock v:ext="edit" rotation="t"/>'
 '<v:textbox style="mso-direction-alt:auto" o:singleclick="f">'
 '<div style="text-align:center"><font color="#FFFFFF" size="200" face="Arial"><b>\U0001F50D חיפוש</b></font></div>'
 '</v:textbox>'
 '<x:ClientData ObjectType="Button">'
-'<x:Anchor>7, 5, 19, 2, 8, 60, 21, 5</x:Anchor>'
+'<x:Anchor>6, 30, 23, 4, 7, 110, 24, 12</x:Anchor>'
 '<x:PrintObject>False</x:PrintObject><x:AutoFill>False</x:AutoFill>'
 '<x:FmlaMacro>PM_GlobalSearch</x:FmlaMacro>'
 '<x:TextHAlign>Center</x:TextHAlign><x:TextVAlign>Center</x:TextVAlign>'

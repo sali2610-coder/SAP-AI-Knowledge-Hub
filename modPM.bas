@@ -5,7 +5,7 @@ Option Explicit
 ' ואז סורק את כל הלשוניות (פרט לדאשבורד) ומקפיץ ללשונית ולשורה הנכונה.
 Sub PM_GlobalSearch()
     Dim searchText As String, ws As Worksheet, foundRange As Range
-    searchText = CStr(ThisWorkbook.Sheets(1).Range("C21").Value)
+    searchText = CStr(ThisWorkbook.Sheets(1).Range("C25").Value)
     If Trim(searchText) = "" Then
         searchText = InputBox("הזן שדה טכני / טבלה / טרנזקציה / מונח (עברית או אנגלית):", "חיפוש גלובלי - SAP PM")
     End If
