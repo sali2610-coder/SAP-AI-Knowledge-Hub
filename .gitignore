@@ -42,3 +42,7 @@ next-env.d.ts
 
 # nested sibling project (has its own git, env, node_modules)
 /sap-odata-explorer/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
