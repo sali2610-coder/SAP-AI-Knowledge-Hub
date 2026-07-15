@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" role="img" aria-label="דף צביעה - ארנב">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <rect x="10" y="10" width="190" height="277" rx="9" fill="none" stroke="#111111" stroke-width="1.2"/>
+  <g fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ears -->
+    <path d="M90 104 C76 60 78 34 92 32 C106 30 102 72 104 104"/>
+    <path d="M120 104 C134 60 132 34 118 32 C104 30 108 72 106 104"/>
+    <path d="M93 96 C84 64 86 46 93 44"/>
+    <path d="M117 96 C126 64 124 46 117 44"/>
+    <!-- head -->
+    <circle cx="105" cy="140" r="44"/>
+    <!-- eyes -->
+    <circle cx="91" cy="138" r="7"/>
+    <circle cx="119" cy="138" r="7"/>
+    <!-- cheeks -->
+    <circle cx="78" cy="152" r="5"/>
+    <circle cx="132" cy="152" r="5"/>
+    <!-- nose -->
+    <path d="M101 150 L109 150 L105 156 Z"/>
+    <!-- mouth -->
+    <path d="M105 156 L105 162"/>
+    <path d="M105 162 Q98 168 93 163"/>
+    <path d="M105 162 Q112 168 117 163"/>
+    <!-- teeth -->
+    <path d="M100 164 h10 v7 h-10 Z"/>
+    <path d="M105 164 v7"/>
+    <!-- body -->
+    <path d="M74 172 C58 210 66 252 105 252 C144 252 152 210 136 172"/>
+    <!-- tummy -->
+    <path d="M88 196 Q105 214 122 196"/>
+    <!-- front paws -->
+    <ellipse cx="92" cy="230" rx="10" ry="16"/>
+    <ellipse cx="118" cy="230" rx="10" ry="16"/>
+    <!-- hind feet -->
+    <ellipse cx="80" cy="250" rx="16" ry="9"/>
+    <ellipse cx="130" cy="250" rx="16" ry="9"/>
+  </g>
+  <circle cx="91" cy="138" r="2.4" fill="#111111"/>
+  <circle cx="119" cy="138" r="2.4" fill="#111111"/>
+  <text x="105" y="276" text-anchor="middle" font-family="Heebo, Arial, sans-serif" font-size="15" font-weight="700" fill="#111111">ארנב</text>
+</svg>

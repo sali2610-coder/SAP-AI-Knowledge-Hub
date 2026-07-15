@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" role="img" aria-label="דף צביעה - חתול">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <rect x="10" y="10" width="190" height="277" rx="9" fill="none" stroke="#111111" stroke-width="1.2"/>
+  <g fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ears -->
+    <path d="M72 84 L60 42 L102 70"/>
+    <path d="M138 84 L150 42 L108 70"/>
+    <path d="M76 78 L69 54 L94 70"/>
+    <path d="M134 78 L141 54 L116 70"/>
+    <!-- head -->
+    <circle cx="105" cy="118" r="53"/>
+    <!-- eyes -->
+    <circle cx="88" cy="112" r="8"/>
+    <circle cx="122" cy="112" r="8"/>
+    <!-- nose -->
+    <path d="M100 130 L110 130 L105 137 Z"/>
+    <!-- mouth -->
+    <path d="M105 137 Q97 145 89 140"/>
+    <path d="M105 137 Q113 145 121 140"/>
+    <!-- whiskers -->
+    <path d="M78 126 L46 120"/>
+    <path d="M78 132 L44 132"/>
+    <path d="M78 138 L46 146"/>
+    <path d="M132 126 L164 120"/>
+    <path d="M132 132 L166 132"/>
+    <path d="M132 138 L164 146"/>
+    <!-- body -->
+    <path d="M64 152 C50 192 55 240 105 240 C155 240 160 192 146 152"/>
+    <!-- paws -->
+    <ellipse cx="88" cy="234" rx="14" ry="10"/>
+    <ellipse cx="122" cy="234" rx="14" ry="10"/>
+    <path d="M88 226 L88 234"/>
+    <path d="M122 226 L122 234"/>
+    <!-- tummy -->
+    <path d="M84 178 Q105 200 126 178"/>
+    <!-- tail -->
+    <path d="M146 210 Q192 214 180 172 Q174 148 150 160"/>
+  </g>
+  <circle cx="88" cy="112" r="2.4" fill="#111111"/>
+  <circle cx="122" cy="112" r="2.4" fill="#111111"/>
+  <text x="105" y="276" text-anchor="middle" font-family="Heebo, Arial, sans-serif" font-size="15" font-weight="700" fill="#111111">חתול</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" role="img" aria-label="דף צביעה - פיל">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <rect x="10" y="10" width="190" height="277" rx="9" fill="none" stroke="#111111" stroke-width="1.2"/>
+  <g fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ears -->
+    <path d="M76 92 C36 84 30 156 74 152 C86 150 86 116 84 100"/>
+    <path d="M134 92 C174 84 180 156 136 152 C124 150 124 116 126 100"/>
+    <!-- head -->
+    <circle cx="105" cy="120" r="48"/>
+    <!-- eyes -->
+    <circle cx="88" cy="112" r="7"/>
+    <circle cx="122" cy="112" r="7"/>
+    <!-- trunk -->
+    <path d="M96 130 C92 168 96 198 90 214 C86 226 102 230 108 216 C110 208 104 204 100 206"/>
+    <path d="M114 130 C114 158 114 182 111 200"/>
+    <path d="M96 148 Q105 154 114 148"/>
+    <path d="M95 166 Q105 172 113 166"/>
+    <!-- feet -->
+    <path d="M74 158 C68 200 70 236 88 236 C98 236 98 210 96 190"/>
+    <path d="M136 158 C142 200 140 236 122 236 C112 236 112 210 114 190"/>
+    <path d="M78 236 h18 M118 236 h18"/>
+    <path d="M82 236 v-8 M90 236 v-8 M124 236 v-8 M132 236 v-8"/>
+  </g>
+  <circle cx="88" cy="112" r="2.4" fill="#111111"/>
+  <circle cx="122" cy="112" r="2.4" fill="#111111"/>
+  <text x="105" y="276" text-anchor="middle" font-family="Heebo, Arial, sans-serif" font-size="15" font-weight="700" fill="#111111">פיל</text>
+</svg>

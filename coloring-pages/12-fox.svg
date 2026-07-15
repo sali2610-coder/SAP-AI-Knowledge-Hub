@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" role="img" aria-label="דף צביעה - שועל">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <rect x="10" y="10" width="190" height="277" rx="9" fill="none" stroke="#111111" stroke-width="1.2"/>
+  <g fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ears -->
+    <path d="M66 106 L58 56 L100 92"/>
+    <path d="M144 106 L152 56 L110 92"/>
+    <path d="M72 100 L67 72 L92 92"/>
+    <path d="M138 100 L143 72 L118 92"/>
+    <!-- head -->
+    <path d="M62 100 Q105 82 148 100 Q142 148 105 168 Q68 148 62 100 Z"/>
+    <!-- cheek fur -->
+    <path d="M63 120 L46 114 L60 130"/>
+    <path d="M147 120 L164 114 L150 130"/>
+    <!-- eyes -->
+    <circle cx="88" cy="112" r="6"/>
+    <circle cx="122" cy="112" r="6"/>
+    <!-- muzzle -->
+    <path d="M84 132 Q105 142 126 132"/>
+    <!-- nose -->
+    <path d="M100 152 L110 152 L105 160 Z"/>
+    <path d="M105 160 L105 164"/>
+    <path d="M105 164 Q99 169 95 165"/>
+    <path d="M105 164 Q111 169 115 165"/>
+    <!-- body -->
+    <path d="M76 176 C62 210 72 250 105 250 C138 250 148 210 134 176"/>
+    <!-- tummy -->
+    <path d="M90 198 Q105 212 120 198"/>
+    <!-- feet -->
+    <ellipse cx="92" cy="246" rx="12" ry="8"/>
+    <ellipse cx="118" cy="246" rx="12" ry="8"/>
+    <!-- bushy tail -->
+    <path d="M134 220 Q192 210 178 158 Q172 138 150 150"/>
+    <path d="M170 154 Q182 168 176 186"/>
+  </g>
+  <circle cx="88" cy="112" r="2.4" fill="#111111"/>
+  <circle cx="122" cy="112" r="2.4" fill="#111111"/>
+  <text x="105" y="276" text-anchor="middle" font-family="Heebo, Arial, sans-serif" font-size="15" font-weight="700" fill="#111111">שועל</text>
+</svg>

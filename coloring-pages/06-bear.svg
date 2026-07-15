@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" role="img" aria-label="דף צביעה - דוב">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <rect x="10" y="10" width="190" height="277" rx="9" fill="none" stroke="#111111" stroke-width="1.2"/>
+  <g fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ears -->
+    <circle cx="70" cy="80" r="16"/>
+    <circle cx="140" cy="80" r="16"/>
+    <circle cx="70" cy="80" r="8"/>
+    <circle cx="140" cy="80" r="8"/>
+    <!-- head -->
+    <circle cx="105" cy="116" r="48"/>
+    <!-- eyes -->
+    <circle cx="90" cy="108" r="6"/>
+    <circle cx="120" cy="108" r="6"/>
+    <!-- snout -->
+    <ellipse cx="105" cy="130" rx="22" ry="17"/>
+    <!-- nose -->
+    <ellipse cx="105" cy="124" rx="7" ry="5"/>
+    <!-- mouth -->
+    <path d="M105 129 L105 136"/>
+    <path d="M105 136 Q98 142 93 138"/>
+    <path d="M105 136 Q112 142 117 138"/>
+    <!-- body -->
+    <path d="M64 148 C48 196 58 246 105 246 C152 246 162 196 146 148"/>
+    <!-- tummy -->
+    <ellipse cx="105" cy="200" rx="30" ry="33"/>
+    <!-- arms -->
+    <ellipse cx="66" cy="192" rx="12" ry="18"/>
+    <ellipse cx="144" cy="192" rx="12" ry="18"/>
+    <!-- feet -->
+    <ellipse cx="88" cy="240" rx="15" ry="11"/>
+    <ellipse cx="122" cy="240" rx="15" ry="11"/>
+    <circle cx="88" cy="240" r="5"/>
+    <circle cx="122" cy="240" r="5"/>
+  </g>
+  <circle cx="90" cy="108" r="2.4" fill="#111111"/>
+  <circle cx="120" cy="108" r="2.4" fill="#111111"/>
+  <text x="105" y="276" text-anchor="middle" font-family="Heebo, Arial, sans-serif" font-size="15" font-weight="700" fill="#111111">דוב</text>
+</svg>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>דפי צביעה חמודים - גילאי 5-6</title>
+<style>
+  :root { --ink:#111; --bg:#f5f7fb; --card:#fff; --primary:#0070f2; --muted:#5b6472; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Heebo", "Segoe UI", Arial, sans-serif; line-height: 1.5;
+  }
+  header {
+    text-align: center; padding: 40px 20px 24px;
+    background: linear-gradient(180deg, #eaf2ff, var(--bg));
+  }
+  header h1 { margin: 0 0 6px; font-size: 30px; }
+  header p { margin: 0; color: var(--muted); font-size: 16px; }
+  .toolbar { margin-top: 18px; }
+  .btn {
+    display: inline-block; border: none; cursor: pointer;
+    background: var(--primary); color: #fff; font-size: 15px; font-weight: 700;
+    padding: 11px 22px; border-radius: 12px; text-decoration: none;
+    box-shadow: 0 6px 16px rgba(0,112,242,.25);
+  }
+  .btn:hover { filter: brightness(1.05); }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 60px; }
+  .grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .card {
+    background: var(--card); border: 1px solid #e4e8f0; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 4px 14px rgba(20,30,60,.06);
+    display: flex; flex-direction: column; transition: transform .12s, box-shadow .12s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(20,30,60,.12); }
+  .thumb { background: #fff; aspect-ratio: 210/297; display: flex; }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .meta { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .meta .name { font-weight: 700; font-size: 18px; }
+  .meta a {
+    font-size: 13px; font-weight: 700; color: var(--primary); text-decoration: none;
+    border: 1.5px solid var(--primary); padding: 6px 12px; border-radius: 10px;
+  }
+  .meta a:hover { background: var(--primary); color: #fff; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 20px 40px; }
+
+  /* Print: turn the gallery into a booklet - one A4 coloring page per sheet. */
+  .print-only { display: none; }
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: #fff; }
+    header, main, footer { display: none !important; }
+    .print-only { display: block; }
+    .print-page { page-break-after: always; width: 210mm; height: 297mm; }
+    .print-page img { width: 210mm; height: 297mm; display: block; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>דפי צביעה חמודים</h1>
+    <p>חיות מקסימות בהתאמה מדויקת לגילאי 5-6 - קווים עבים, שטחים גדולים, מוכן להדפסה על דף A4</p>
+    <div class="toolbar">
+      <button class="btn" onclick="window.print()">הדפס את כל הדפים</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <footer>14 דפי צביעה - לחצו "פתח" על כל חיה כדי להדפיס דף בודד (A4), או "הדפס את כל הדפים" להדפסת החוברת כולה.</footer>
+
+  <!-- Booklet used only when printing -->
+  <div class="print-only" id="printArea"></div>
+
+  <script>
+    var PAGES = [
+      ["01-cat.svg", "חתול"],
+      ["02-dog.svg", "כלב"],
+      ["03-rabbit.svg", "ארנב"],
+      ["04-elephant.svg", "פיל"],
+      ["05-lion.svg", "אריה"],
+      ["06-bear.svg", "דוב"],
+      ["07-pig.svg", "חזרזיר"],
+      ["08-duck.svg", "ברווז"],
+      ["09-turtle.svg", "צב"],
+      ["10-fish.svg", "דג"],
+      ["11-owl.svg", "ינשוף"],
+      ["12-fox.svg", "שועל"],
+      ["13-butterfly.svg", "פרפר"],
+      ["14-penguin.svg", "פינגווין"]
+    ];
+    var grid = document.getElementById("grid");
+    var printArea = document.getElementById("printArea");
+    PAGES.forEach(function (p) {
+      var file = p[0], name = p[1];
+      var card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        '<div class="thumb"><img loading="lazy" src="' + file + '" alt="דף צביעה - ' + name + '"></div>' +
+        '<div class="meta"><span class="name">' + name + '</span>' +
+        '<a href="' + file + '" target="_blank" rel="noopener">פתח</a></div>';
+      grid.appendChild(card);
+
+      var page = document.createElement("div");
+      page.className = "print-page";
+      page.innerHTML = '<img src="' + file + '" alt="' + name + '">';
+      printArea.appendChild(page);
+    });
+  </script>
+</body>
+</html>
